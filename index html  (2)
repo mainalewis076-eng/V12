@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biz Radar AI - Global Marketplace</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--dk:#0d0d1a;--nv:#1a1a2e;--nv2:#16213e;--cy:#00d4ff;--cd:rgba(0,212,255,.12);--cb:rgba(0,212,255,.2);--tx:#e8e8f0;--mt:#8888aa;--ca:#1e1e35;--gn:#27ae60;--gd:rgba(39,174,96,.15);--rd:#e74c3c;--og:#f39c12}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--dk);font-family:'DM Sans',sans-serif;color:var(--tx);overflow-x:hidden}
+.view{display:none;position:absolute;top:0;left:0;width:100%;min-height:100vh;opacity:0;transform:translateY(14px);transition:opacity .28s ease,transform .28s ease;pointer-events:none}
+.view.active{display:block;opacity:1;transform:translateY(0);pointer-events:all;position:relative}
+.view.exit{opacity:0;transform:translateY(-10px)}
+#app{position:relative;overflow:hidden}
+.pb{padding-bottom:85px}
+header{background:var(--nv);padding:14px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--cb);position:sticky;top:0;z-index:100}
+header h1{font-family:'Syne',sans-serif;font-size:17px;flex:1}
+.back{color:var(--cy);text-decoration:none;font-size:22px;cursor:pointer;background:none;border:none}
+.logo{font-family:'Syne',sans-serif;font-size:22px}.logo span{color:var(--cy)}
+.sell-btn{background:var(--cy);color:var(--nv);padding:8px 18px;border-radius:20px;font-size:13px;font-weight:600;border:none;cursor:pointer}
+.card{background:var(--ca);margin:12px 15px;border-radius:14px;padding:15px;border:1px solid var(--cb);animation:fadeUp .4s ease both}
+.card h3{font-family:'Syne',sans-serif;font-size:14px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--cb)}
+.fg{margin-bottom:13px}
+.fg label{display:block;font-size:11px;color:var(--mt);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.fg input,.fg select,.fg textarea{width:100%;padding:11px 13px;border:1px solid var(--cb);border-radius:10px;font-size:13px;background:var(--nv2);color:var(--tx);font-family:'DM Sans',sans-serif}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--cy);background:rgba(0,212,255,.05)}
+.btn-cy{background:linear-gradient(135deg,var(--nv2),var(--cy));color:var(--dk);border:none;border-radius:12px;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;letter-spacing:1px;padding:12px 24px}
+.btn-cy:disabled{opacity:.5;cursor:not-allowed}
+.nav{position:fixed;bottom:0;left:0;right:0;background:var(--nv);display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid var(--cb);z-index:90}
+.nav button{text-decoration:none;color:var(--mt);font-size:10px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif}
+.nav button.on{color:var(--cy)}.ni{font-size:20px}
+.hero{background:linear-gradient(135deg,var(--nv),var(--nv2));padding:28px 20px 20px;text-align:center}
+.hero h2{font-family:'Syne',sans-serif;font-size:24px;color:var(--cy);margin-bottom:6px}
+.hero p{font-size:13px;color:var(--mt)}
+.scard{background:var(--ca);margin:15px;border-radius:16px;padding:20px;border:1px solid var(--cb);animation:fadeUp .4s ease}
+.sbtn{width:100%;padding:14px;background:linear-gradient(135deg,var(--nv2),var(--cy));color:var(--tx);border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;margin-top:5px}
+.sbtn:disabled{opacity:.5}
+.sectitle{padding:10px 15px 5px;font-family:'Syne',sans-serif;font-size:16px;font-weight:700}
+.cats{display:flex;overflow-x:auto;padding:5px 15px 15px;gap:10px;-webkit-overflow-scrolling:touch}
+.cats::-webkit-scrollbar{display:none}
+.cat{min-width:80px;background:var(--ca);border-radius:14px;padding:13px 8px;text-align:center;border:1px solid var(--cb);font-size:11px;color:var(--mt);cursor:pointer;transition:all .2s}
+.cat:active{border-color:var(--cy);color:var(--cy);background:var(--cd)}
+.caticon{font-size:26px;margin-bottom:5px}
+.rlist{padding:0 15px 85px;display:flex;flex-direction:column;gap:13px}
+.pcard{background:var(--ca);border-radius:14px;overflow:hidden;border:1px solid var(--cb);display:flex;cursor:pointer;transition:border-color .2s,transform .15s;animation:fadeUp .3s ease both}
+.pcard:active{border-color:var(--cy);transform:scale(.98)}
+.pthumb{width:110px;min-height:110px;background:var(--nv2);display:flex;align-items:center;justify-content:center;font-size:45px;flex-shrink:0}
+.pinfo{padding:12px;flex:1}
+.pinfo h4{font-family:'Syne',sans-serif;font-size:14px;margin-bottom:5px}
+.price{color:var(--cy);font-weight:700;font-size:15px;margin-bottom:6px}
+.pseller{font-size:11px;color:var(--mt);margin-bottom:3px}
+.ploc{font-size:11px;color:var(--mt)}
+.vbtn{display:inline-block;margin-top:8px;padding:7px 14px;background:var(--cd);color:var(--cy);border:1px solid var(--cy);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+.empty{text-align:center;padding:60px 20px;color:var(--mt)}
+.empty .eico{font-size:60px;margin-bottom:15px}
+.empty h3{margin-bottom:8px;color:var(--tx);font-family:'Syne',sans-serif}
+.pname{font-family:'Syne',sans-serif;font-size:21px;font-weight:800;margin-bottom:6px}
+.pprice{font-size:26px;color:var(--cy);font-weight:700;margin-bottom:15px}
+table{width:100%;border-collapse:collapse}
+table tr{border-bottom:1px solid rgba(255,255,255,.05)}
+table td{padding:9px 4px;font-size:13px}
+table td:first-child{color:var(--mt);width:40%;font-weight:500}
+.contact-btn{display:flex;align-items:center;gap:10px;padding:11px 15px;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600;width:100%;margin-bottom:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;background:#25d366;color:#fff}
+.tabs{background:var(--ca);display:flex;border-bottom:1px solid var(--cb);overflow-x:auto}
+.tab{padding:12px 18px;font-size:12px;color:var(--mt);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s;font-weight:600}
+.tab.on{color:var(--cy);border-bottom-color:var(--cy)}
+.summary{background:var(--nv2);padding:10px 15px;color:var(--mt);font-size:12px;border-bottom:1px solid var(--cb)}
+.rcount{padding:10px 15px;font-size:13px;color:var(--mt)}
+.olist{padding:15px 15px 85px;display:flex;flex-direction:column;gap:15px}
+.ocard{background:var(--ca);border-radius:16px;border:1px solid var(--cb);overflow:hidden}
+.ohdr{padding:14px 15px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--cb);font-size:11px}
+.badge{font-size:11px;padding:4px 12px;border-radius:20px;font-weight:600;background:rgba(243,156,18,.15);color:var(--og)}
+.obody{padding:14px 15px;display:flex;gap:12px;align-items:center}
+.oico{width:55px;height:55px;background:var(--nv2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px}
+.oinf{flex:1}
+.oname{font-family:'Syne',sans-serif;font-size:14px;margin-bottom:4px}
+.oseller{font-size:12px;color:var(--mt);margin-bottom:4px}
+.oprice{font-size:14px;color:var(--cy);font-weight:700}
+.oacts{padding:0 15px 14px;display:flex;gap:8px}
+.abtn{flex:1;padding:9px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:#25d366;color:#fff}
+#aibtn{position:fixed;bottom:75px;right:16px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#0d0d1a,var(--cy));border:2px solid var(--cy);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;z-index:200;box-shadow:0 0 18px rgba(0,212,255,.4);animation:pulse 3s ease-in-out infinite}
+#aipanel{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;display:none;align-items:flex-end}
+#aipanel.open{display:flex}
+.aisheet{background:var(--nv);border-radius:24px 24px 0 0;border-top:2px solid var(--cy);width:100%;height:85vh;display:flex;flex-direction:column}
+.aihdr{padding:14px 20px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--cb)}
+.aiav{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--nv2),var(--cy));display:flex;align-items:center;justify-content:center;font-size:18px}
+.aihinfo h4{font-family:'Syne',sans-serif;font-size:14px}.aihinfo small{font-size:11px;color:var(--gn)}
+.aicl{margin-left:auto;background:transparent;border:none;color:var(--mt);font-size:24px;cursor:pointer}
+.aimsgs{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.aimsg{max-width:85%;padding:10px 14px;border-radius:16px;font-size:13px;line-height:1.5}
+.aimsg.bot{background:var(--ca);border:1px solid var(--cb);align-self:flex-start}
+.aimsg.user{background:rgba(0,212,255,.3);border:1px solid var(--cb);align-self:flex-end}
+.aiinrow{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--cb)}
+.aiin{flex:1;padding:10px 14px;background:var(--ca);border:1px solid var(--cb);border-radius:24px;color:var(--tx);font-size:13px;font-family:'DM Sans',sans-serif}
+.aiin:focus{outline:none;border-color:var(--cy)}
+.aisend{width:40px;height:40px;border-radius:50%;background:var(--cy);border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--dk)}
+.aisend:disabled{opacity:.4}
+.errmsg{background:rgba(231,76,60,.15);border:1px solid rgba(231,76,60,.4);color:#f66;padding:10px 13px;border-radius:8px;font-size:12px;margin-bottom:12px;display:none}
+.success{background:rgba(39,174,96,.15);border:1px solid rgba(39,174,96,.4);color:var(--gn);padding:10px 13px;border-radius:8px;font-size:12px;margin-bottom:12px;display:none}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--cb);border-top-color:var(--cy);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- HOME -->
+<div class="view active" id="v-home">
+  <header>
+    <div class="logo">📡 Biz <span>Radar</span></div>
+    <button class="sell-btn" onclick="go('office')">Sell Here</button>
+  </header>
+  <div class="hero">
+    <h2>Find Products Near You</h2>
+    <p>Search local sellers from anywhere in the world</p>
+  </div>
+  <div class="pb">
+    <div class="scard">
+      <h3>🔍 Search</h3>
+      <div class="errmsg" id="herr"></div>
+      <div class="fg"><label>Product</label><input type="text" id="hprod" placeholder="tomatoes, dress..."></div>
+      <div class="fg"><label>Min Price</label><input type="number" id="hmin" min="0"></div>
+      <div class="fg"><label>Max Price</label><input type="number" id="hmax" min="0"></div>
+      <div class="fg"><label>Country</label><input type="text" id="hcountry" placeholder="Kenya, Nigeria..."></div>
+      <button class="sbtn" onclick="doSearch()">📡 SEARCH</button>
+    </div>
+    <div class="sectitle">Categories</div>
+    <div class="cats">
+      <div class="cat" onclick="quickCat('food')"><div class="caticon">🍎</div>Food</div>
+      <div class="cat" onclick="quickCat('fashion')"><div class="caticon">👗</div>Fashion</div>
+      <div class="cat" onclick="quickCat('electronics')"><div class="caticon">📱</div>Electronics</div>
+      <div class="cat" onclick="quickCat('furniture')"><div class="caticon">🪑</div>Furniture</div>
+      <div class="cat" onclick="quickCat('crafts')"><div class="caticon">🎨</div>Crafts</div>
+      <div class="cat" onclick="quickCat('agriculture')"><div class="caticon">🌾</div>Agriculture</div>
+      <div class="cat" onclick="quickCat('beauty')"><div class="caticon">💄</div>Beauty</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <button class="on" onclick="go('home')"><span class="ni">🏠</span>Home</button>
+    <button onclick="go('results')"><span class="ni">🔍</span>Search</button>
+    <button onclick="go('office')"><span class="ni">🏪</span>Sell</button>
+    <button onclick="go('orders')"><span class="ni">📦</span>Orders</button>
+  </nav>
+</div>
+
+<!-- RESULTS -->
+<div class="view" id="v-results">
+  <header>
+    <button class="back" onclick="go('home')">←</button>
+    <h1>Results</h1>
+  </header>
+  <div class="summary" id="rsummary">Searching...</div>
+  <div class="rcount" id="rcount"></div>
+  <div class="rlist" id="rlist"></div>
+  <nav class="nav">
+    <button onclick="go('home')"><span class="ni">🏠</span>Home</button>
+    <button class="on"><span class="ni">🔍</span>Search</button>
+    <button onclick="go('office')"><span class="ni">🏪</span>Sell</button>
+    <button onclick="go('orders')"><span class="ni">📦</span>Orders</button>
+  </nav>
+</div>
+
+<!-- PRODUCT -->
+<div class="view" id="v-product">
+  <header>
+    <button class="back" onclick="go('results')">←</button>
+    <h1>Product</h1>
+  </header>
+  <div style="background:var(--nv2);padding:15px">
+    <div style="width:100%;height:220px;background:var(--nv);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:80px" id="pmainimg">📦</div>
+  </div>
+  <div class="card">
+    <div class="pname" id="ppname">Loading...</div>
+    <div class="pprice" id="ppprice">$0.00</div>
+    <table>
+      <tr><td>📏 Size</td><td id="pdsize">-</td></tr>
+      <tr><td>🎨 Colour</td><td id="pdcol">-</td></tr>
+      <tr><td>📦 Details</td><td id="pdother">-</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h3>🏪 Seller</h3>
+    <div style="margin-bottom:10px"><div class="pname" style="font-size:15px" id="psname">-</div><div style="font-size:12px;color:var(--mt);margin-top:2px" id="psscat">-</div></div>
+  </div>
+  <div class="card">
+    <h3>📞 Contact</h3>
+    <button class="contact-btn" id="pwalink" onclick="contactWA()"><span>💬</span> WhatsApp</button>
+  </div>
+  <div class="card pb">
+    <h3>🛒 Order</h3>
+    <div class="success" id="pconfirm">✅ Order sent!</div>
+    <button class="btn-cy" style="width:100%;padding:15px;font-size:16px" id="orderbtn" onclick="placeOrder()">✅ ORDER NOW</button>
+  </div>
+  <nav class="nav">
+    <button onclick="go('home')"><span class="ni">🏠</span>Home</button>
+    <button onclick="go('results')"><span class="ni">🔍</span>Search</button>
+    <button onclick="go('office')"><span class="ni">🏪</span>Sell</button>
+    <button onclick="go('orders')"><span class="ni">📦</span>Orders</button>
+  </nav>
+</div>
+
+<!-- ORDERS -->
+<div class="view" id="v-orders">
+  <header>
+    <button class="back" onclick="go('home')">←</button>
+    <h1>My Orders</h1>
+  </header>
+  <div class="tabs">
+    <div class="tab on" onclick="ofilter('all',this)">All</div>
+    <div class="tab" onclick="ofilter('pending',this)">Pending</div>
+    <div class="tab" onclick="ofilter('confirmed',this)">Confirmed</div>
+    <div class="tab" onclick="ofilter('delivered',this)">Delivered</div>
+  </div>
+  <div class="olist" id="olist"></div>
+  <nav class="nav">
+    <button onclick="go('home')"><span class="ni">🏠</span>Home</button>
+    <button onclick="go('results')"><span class="ni">🔍</span>Search</button>
+    <button onclick="go('office')"><span class="ni">🏪</span>Sell</button>
+    <button class="on"><span class="ni">📦</span>Orders</button>
+  </nav>
+</div>
+
+<!-- SELLERS OFFICE -->
+<div class="view" id="v-office">
+  <header style="justify-content:space-between">
+    <h1>My Store</h1>
+    <button style="background:none;border:none;font-size:20px;cursor:pointer">🔔</button>
+  </header>
+  <div style="background:linear-gradient(135deg,var(--nv),var(--nv2));padding:20px 15px">
+    <h2 style="font-family:'Syne',sans-serif;font-size:16px;margin-bottom:3px" id="osname">My Store</h2>
+    <div style="color:var(--cy);font-size:12px;margin-bottom:3px" id="osceo">-</div>
+    <div style="color:var(--mt);font-size:11px" id="oscat">-</div>
+  </div>
+  <div style="display:flex;gap:10px;padding:15px">
+    <div style="flex:1;background:var(--ca);border-radius:12px;padding:12px;text-align:center;border:1px solid var(--cb)"><div style="font-family:'Syne',sans-serif;font-size:24px;color:var(--cy)" id="otprod">0</div><div style="font-size:10px;color:var(--mt)">Products</div></div>
+    <div style="flex:1;background:var(--ca);border-radius:12px;padding:12px;text-align:center;border:1px solid var(--cb)"><div style="font-family:'Syne',sans-serif;font-size:24px;color:var(--cy)" id="otorders">0</div><div style="font-size:10px;color:var(--mt)">Orders</div></div>
+    <div style="flex:1;background:var(--ca);border-radius:12px;padding:12px;text-align:center;border:1px solid var(--cb)"><div style="font-family:'Syne',sans-serif;font-size:24px;color:var(--gn)" id="otcommission">$0</div><div style="font-size:10px;color:var(--mt)">Commission</div></div>
+  </div>
+  <nav class="nav">
+    <button onclick="go('home')"><span class="ni">🏠</span>Home</button>
+    <button onclick="go('results')"><span class="ni">🔍</span>Search</button>
+    <button class="on"><span class="ni">🏪</span>Sell</button>
+    <button onclick="go('orders')"><span class="ni">📦</span>Orders</button>
+  </nav>
+</div>
+
+</div>
+
+<!-- AI -->
+<div id="aibtn" onclick="aiOpen()">📡</div>
+<div id="aipanel" onclick="aiBackdrop(event)">
+  <div class="aisheet">
+    <div class="aihdr">
+      <div class="aiav">📡</div>
+      <div class="aihinfo"><h4>Radar AI</h4><small>Smart Assistant</small></div>
+      <button class="aicl" onclick="aiClose()">×</button>
+    </div>
+    <div class="aimsgs" id="aimsgs"></div>
+    <div class="aiinrow">
+      <input class="aiin" id="aiin" placeholder="Ask anything..." onkeydown="if(event.key==='Enter')aiSend()">
+      <button class="aisend" id="aisend" onclick="aiSend()">➤</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// BACKEND CONFIG
+const API = 'https://bweb-backend-production.up.railway.app';
+const COMMISSION = 0.10; // 10%
+let curView = 'home';
+const g = id => document.getElementById(id);
+
+// NAVIGATION
+function go(view) {
+  const cur = g('v-' + curView);
+  cur.classList.add('exit');
+  setTimeout(() => {
+    cur.classList.remove('active', 'exit');
+    curView = view;
+    g('v-' + view).classList.add('active');
+    window.scrollTo(0, 0);
+    if(view === 'results') loadResults();
+    if(view === 'orders') loadOrders();
+    if(view === 'office') loadSeller();
+  }, 250);
+}
+
+// SEARCH
+function doSearch() {
+  const prod = g('hprod').value.trim();
+  const country = g('hcountry').value.trim();
+  if (!prod && !country) { g('herr').textContent = '⚠️ Enter product or country'; g('herr').style.display = 'block'; return; }
+  window._SEARCH = { product: prod, country, minPrice: g('hmin').value, maxPrice: g('hmax').value };
+  go('results');
+}
+
+function quickCat(cat) {
+  window._SEARCH = { category: cat };
+  go('results');
+}
+
+// RESULTS
+async function loadResults() {
+  g('rlist').innerHTML = '<div class="empty"><div class="spinner"></div></div>';
+  try {
+    const response = await fetch(`${API}/api/products`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(window._SEARCH || {}) });
+    const data = await response.json();
+    const products = data.products || [];
+    if (!products.length) { g('rcount').textContent = '0'; g('rlist').innerHTML = '<div class="empty"><h3>No products</h3></div>'; return; }
+    g('rcount').textContent = products.length;
+    g('rlist').innerHTML = products.map((p,i) => `<div class="pcard" onclick="viewProduct(${p.id})" style="animation-delay:${i*0.05}s"><div class="pthumb">${p.emoji||'📦'}</div><div class="pinfo"><h4>${p.name}</h4><div class="price">$${parseFloat(p.price).toFixed(2)}</div><div class="pseller">🏪 ${p.seller_name}</div><div class="ploc">📍 ${p.country}</div><button class="vbtn" onclick="event.stopPropagation();viewProduct(${p.id})">View</button></div></div>`).join('');
+  } catch(e) { g('rlist').innerHTML = '<div class="empty"><h3>Error loading</h3></div>'; }
+}
+
+// PRODUCT
+let currentProduct = null;
+async function viewProduct(id) {
+  window._PID = id;
+  g('orderbtn').disabled = true;
+  try {
+    const response = await fetch(`${API}/api/products/${id}`);
+    currentProduct = await response.json();
+    g('ppname').textContent = currentProduct.name;
+    g('ppprice').textContent = '$' + parseFloat(currentProduct.price).toFixed(2);
+    g('pmainimg').textContent = currentProduct.emoji || '📦';
+    g('pdsize').textContent = currentProduct.size || '-';
+    g('pdcol').textContent = currentProduct.colour || '-';
+    g('pdother').textContent = currentProduct.description || '-';
+    g('psname').textContent = currentProduct.seller_name || '-';
+    g('psscat').textContent = currentProduct.category || '-';
+    g('pconfirm').style.display = 'none';
+    g('orderbtn').disabled = false;
+  } catch(e) { g('pconfirm').textContent = '❌ Error'; g('pconfirm').style.display = 'block'; }
+  go('product');
+}
+
+function contactWA() {
+  if (!currentProduct || !currentProduct.seller_phone) { alert('No phone'); return; }
+  window.open(`https://wa.me/${currentProduct.seller_phone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hi! Interested in "${currentProduct.name}"`)}`, '_blank');
+}
+
+async function placeOrder() {
+  if (!currentProduct) return;
+  const email = prompt('Your email:');
+  if (!email) return;
+  g('orderbtn').disabled = true;
+  const commission = parseFloat(currentProduct.price) * COMMISSION;
+  try {
+    const response = await fetch(`${API}/place-order`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        buyer_email: email, buyer_name: email.split('@')[0], product_id: currentProduct.id, product_name: currentProduct.name,
+        quantity: 1, unit_price: parseFloat(currentProduct.price), seller_id: currentProduct.seller_id, seller_name: currentProduct.seller_name,
+        seller_amount: parseFloat(currentProduct.price) - commission, commission: commission, commission_rate: COMMISSION, payment_method: 'pesapal'
+      })
+    });
+    const data = await response.json();
+    if (data.success) {
+      g('pconfirm').textContent = `✅ Ordered! Commission: $${commission.toFixed(2)}`;
+      g('pconfirm').style.display = 'block';
+      localStorage.setItem('userEmail', email);
+      if (data.payment_url) setTimeout(() => window.open(data.payment_url, '_blank'), 500);
+    }
+  } catch(e) { alert('Failed: ' + e.message); }
+  g('orderbtn').disabled = false;
+}
+
+// ORDERS
+let ocur = 'all';
+async function loadOrders() {
+  const email = localStorage.getItem('userEmail') || prompt('Email:');
+  if (!email) { g('olist').innerHTML = '<div class="empty"><h3>Login</h3></div>'; return; }
+  localStorage.setItem('userEmail', email);
+  g('olist').innerHTML = '<div class="empty"><div class="spinner"></div></div>';
+  try {
+    const response = await fetch(`${API}/orders?email=${encodeURIComponent(email)}`);
+    window._ORDERS = (await response.json()).orders || [];
+    renderOrders();
+  } catch(e) { window._ORDERS = []; renderOrders(); }
+}
+function ofilter(status, btn) { ocur = status; document.querySelectorAll('.tab').forEach(t => t.classList.remove('on')); btn.classList.add('on'); renderOrders(); }
+function renderOrders() {
+  const orders = ocur === 'all' ? (window._ORDERS || []) : (window._ORDERS || []).filter(o => o.status === ocur);
+  if (!orders.length) { g('olist').innerHTML = '<div class="empty"><h3>No orders</h3></div>'; return; }
+  g('olist').innerHTML = orders.map(o => `<div class="ocard"><div class="ohdr"><div>#${o.id}</div><span class="badge">${o.status}</span></div><div class="obody"><div class="oico">${o.emoji||'📦'}</div><div class="oinf"><div class="oname">${o.product_name}</div><div class="oseller">🏪 ${o.seller_name}</div><div class="oprice">$${parseFloat(o.unit_price).toFixed(2)}</div></div></div><div class="oacts"><button class="abtn" onclick="contactOrder('${o.seller_phone}','${o.product_name}')">💬 Contact</button></div></div>`).join('');
+}
+function contactOrder(phone, product) { if (!phone) { alert('No contact'); return; } window.open(`https://wa.me/${phone.replace(/\D/g,'')}?text=${encodeURIComponent('About ' + product)}`, '_blank'); }
+
+// SELLER
+async function loadSeller() {
+  try {
+    const response = await fetch(`${API}/seller-dashboard`);
+    const data = await response.json();
+    g('osname').textContent = data.store_name || 'My Store';
+    g('osceo').textContent = data.owner_name || '-';
+    g('oscat').textContent = data.category || '-';
+    g('otprod').textContent = data.product_count || 0;
+    g('otorders').textContent = data.order_count || 0;
+    g('otcommission').textContent = '$' + parseFloat(data.total_commission || 0).toFixed(2);
+  } catch(e) { console.error('Seller error', e); }
+}
+
+// AI
+function aiOpen() { g('aipanel').classList.add('open'); g('aiin').focus(); }
+function aiClose() { g('aipanel').classList.remove('open'); }
+function aiBackdrop(e) { if(e.target.id === 'aipanel') aiClose(); }
+function aiAddBot(text) { const el = document.createElement('div'); el.className = 'aimsg bot'; el.textContent = text; g('aimsgs').appendChild(el); g('aimsgs').scrollTop = g('aimsgs').scrollHeight; }
+function aiAddUser(text) { const el = document.createElement('div'); el.className = 'aimsg user'; el.textContent = text; g('aimsgs').appendChild(el); g('aimsgs').scrollTop = g('aimsgs').scrollHeight; }
+async function aiSend() {
+  const text = g('aiin').value.trim();
+  if (!text) return;
+  g('aiin').value = '';
+  aiAddUser(text);
+  g('aisend').disabled = true;
+  try {
+    const response = await fetch(`${API}/ai/assistant`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, context: curView }) });
+    const data = await response.json();
+    aiAddBot(data.response || 'I could not process that.');
+  } catch(e) { aiAddBot('Connection error.'); }
+  g('aisend').disabled = false;
+  g('aiin').focus();
+}
+
+// INIT
+aiAddBot('Hi! 👋 How can I help?');
+</script>
+</body>
+</html>
