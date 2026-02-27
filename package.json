@@ -1,0 +1,16 @@
+{
+  "name": "biz-radar-frontend",
+  "version": "1.0.0",
+  "description": "Biz Radar - Global Marketplace Frontend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["marketplace", "ecommerce", "sellers", "buyers"],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
