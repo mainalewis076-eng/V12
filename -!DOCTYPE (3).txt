@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biz Radar AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--dk:#0d0d1a;--nv:#1a1a2e;--nv2:#16213e;--cy:#00d4ff;--cd:rgba(0,212,255,.12);--cb:rgba(0,212,255,.2);--tx:#e8e8f0;--mt:#8888aa;--ca:#1e1e35;--gn:#27ae60;--gd:rgba(39,174,96,.15);--rd:#e74c3c;--og:#f39c12}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--dk);font-family:'DM Sans',sans-serif;color:var(--tx);overflow-x:hidden}
+
+/* ── VIEWS / TRANSITIONS ── */
+.view{display:none;position:absolute;top:0;left:0;width:100%;min-height:100vh;opacity:0;transform:translateY(14px);transition:opacity .28s ease,transform .28s ease;pointer-events:none}
+.view.active{display:block;opacity:1;transform:translateY(0);pointer-events:all;position:relative}
+.view.exit{opacity:0;transform:translateY(-10px)}
+#app{position:relative;overflow:hidden}
+
+/* ── LAYOUT ── */
+.pb{padding-bottom:85px}
+header{background:var(--nv);padding:14px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--cb);position:sticky;top:0;z-index:100}
+header h1{font-family:'Syne',sans-serif;font-size:17px;flex:1}
+.back{color:var(--cy);text-decoration:none;font-size:22px;cursor:pointer;background:none;border:none}
+.logo{font-family:'Syne',sans-serif;font-size:22px} .logo span{color:var(--cy)}
+.sell-btn{background:var(--cy);color:var(--nv);padding:8px 18px;border-radius:20px;font-size:13px;font-weight:600;border:none;cursor:pointer}
+
+/* ── CARDS ── */
+.card{background:var(--ca);margin:12px 15px;border-radius:14px;padding:15px;border:1px solid var(--cb);animation:fadeUp .4s ease both}
+.card h3{font-family:'Syne',sans-serif;font-size:14px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--cb)}
+
+/* ── FORMS ── */
+.fg{margin-bottom:13px}
+.fg label{display:block;font-size:11px;color:var(--mt);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.fg input,.fg select,.fg textarea{width:100%;padding:11px 13px;border:1px solid var(--cb);border-radius:10px;font-size:13px;background:var(--nv2);color:var(--tx);font-family:'DM Sans',sans-serif;transition:border-color .2s}
+.fg input::placeholder{color:var(--mt)}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--cy);background:rgba(0,212,255,.05)}
+.fg select option{background:var(--nv)} .fg textarea{height:70px;resize:none}
+.row2{display:flex;gap:10px;align-items:center} .row2 input{flex:1} .row2 span{color:var(--mt);font-size:13px}
+
+/* ── BUTTONS ── */
+.btn-cy{background:linear-gradient(135deg,var(--nv2),var(--cy));color:var(--dk);border:none;border-radius:12px;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;letter-spacing:1px;transition:opacity .2s,transform .1s}
+.btn-cy:active{opacity:.9;transform:scale(.99)}
+.contact-btn{display:flex;align-items:center;gap:10px;padding:11px 15px;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600;width:100%;margin-bottom:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif}
+.bwa{background:#25d366;color:#fff} .bph{background:var(--cd);color:var(--cy);border:1px solid var(--cy)!important}
+.bem{background:rgba(255,165,0,.15);color:#ffa500;border:1px solid rgba(255,165,0,.4)!important}
+.bwb{background:rgba(150,150,255,.15);color:#aaf;border:1px solid rgba(150,150,255,.4)!important}
+
+/* ── BOTTOM NAV ── */
+.nav{position:fixed;bottom:0;left:0;right:0;background:var(--nv);display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid var(--cb);z-index:90}
+.nav a,.nav button{text-decoration:none;color:var(--mt);font-size:10px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif}
+.nav a.on,.nav button.on{color:var(--cy)} .ni{font-size:20px}
+
+/* ── MODALS ── */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;align-items:flex-end;justify-content:center}
+.mo.open{display:flex}
+.modal{background:var(--ca);border-radius:20px 20px 0 0;padding:20px 20px 30px;width:100%;max-height:90vh;overflow-y:auto;border-top:2px solid var(--cy);animation:slideUp .3s ease}
+.mh{width:40px;height:4px;background:var(--mt);border-radius:2px;margin:0 auto 15px}
+.mhd{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.mhd h3{font-family:'Syne',sans-serif;font-size:18px}
+.mcl{background:transparent;border:none;color:var(--mt);font-size:24px;cursor:pointer}
+.merr{background:rgba(231,76,60,.15);border:1px solid rgba(231,76,60,.4);color:#f66;padding:10px 13px;border-radius:8px;font-size:12px;margin-bottom:12px;display:none}
+
+/* ── LOGISTICS BADGE ── */
+.lbadge{display:inline-block;background:var(--gd);color:var(--gn);padding:6px 14px;border-radius:15px;font-size:12px;font-weight:600;border:1px solid rgba(39,174,96,.3)}
+
+/* ── ERROR MSG ── */
+.errmsg{background:rgba(231,76,60,.15);border:1px solid rgba(231,76,60,.4);color:#f66;padding:10px 13px;border-radius:8px;font-size:12px;margin-bottom:12px;display:none}
+
+/* ════════════ HOME ════════════ */
+.hero{background:linear-gradient(135deg,var(--nv),var(--nv2));padding:28px 20px 20px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50px;left:-50px;width:200px;height:200px;background:radial-gradient(circle,rgba(0,212,255,.15),transparent 70%);border-radius:50%}
+.hero h2{font-family:'Syne',sans-serif;font-size:24px;color:var(--cy);margin-bottom:6px;position:relative}
+.hero p{font-size:13px;color:var(--mt);position:relative}
+.scard{background:var(--ca);margin:15px;border-radius:16px;padding:20px;border:1px solid var(--cb);animation:fadeUp .4s ease}
+.scard h3{font-family:'Syne',sans-serif;font-size:15px;margin-bottom:16px;text-align:center;padding-bottom:10px;border-bottom:2px solid var(--cy)}
+.locrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.loclbl{font-size:11px;color:var(--mt);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.gpsbtn{display:flex;align-items:center;gap:6px;background:var(--cd);border:1px solid var(--cy);color:var(--cy);padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
+.gpsbtn:disabled{opacity:.5;cursor:not-allowed}
+.gpsbtn.loading span{animation:pulse 1s infinite}
+.gpsbanner{display:none;background:rgba(39,174,96,.12);border:1px solid rgba(39,174,96,.4);color:#5dba7d;padding:8px 13px;border-radius:8px;font-size:12px;margin-bottom:10px}
+.sbtn{width:100%;padding:14px;background:linear-gradient(135deg,var(--nv2),var(--cy));color:var(--tx);border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;margin-top:5px;letter-spacing:1px;transition:opacity .2s,transform .1s}
+.sbtn:active{opacity:.9;transform:scale(.99)}
+.sectitle{padding:10px 15px 5px;font-family:'Syne',sans-serif;font-size:16px;font-weight:700}
+.cats{display:flex;overflow-x:auto;padding:5px 15px 15px;gap:10px}
+.cats::-webkit-scrollbar{display:none}
+.cat{min-width:80px;background:var(--ca);border-radius:14px;padding:13px 8px;text-align:center;border:1px solid var(--cb);font-size:11px;color:var(--mt);cursor:pointer;transition:all .2s}
+.cat:hover,.cat:active{border-color:var(--cy);color:var(--cy);background:var(--cd)}
+.caticon{font-size:26px;margin-bottom:5px}
+
+/* ════════════ RESULTS ════════════ */
+.summary{background:var(--nv2);padding:10px 15px;color:var(--mt);font-size:12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--cb)}
+.summary span{color:var(--cy);font-weight:600}
+.rfbtn{background:transparent;border:1px solid var(--cy);color:var(--cy);padding:5px 12px;border-radius:15px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.sortbar{background:var(--ca);padding:10px 15px;display:flex;gap:8px;overflow-x:auto;border-bottom:1px solid var(--cb)}
+.sortbar::-webkit-scrollbar{display:none}
+.sortbtn{min-width:fit-content;padding:6px 14px;border:1px solid var(--cb);border-radius:20px;background:transparent;font-size:12px;color:var(--mt);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.sortbtn.on{background:var(--cd);color:var(--cy);border-color:var(--cy)}
+.rcount{padding:10px 15px;font-size:13px;color:var(--mt)}
+.rlist{padding:0 15px 85px;display:flex;flex-direction:column;gap:13px}
+.sk{background:var(--ca);border-radius:14px;border:1px solid var(--cb);display:flex;overflow:hidden;height:110px}
+.ski{width:110px;background:var(--nv2);flex-shrink:0;position:relative;overflow:hidden}
+.skb{flex:1;padding:12px;display:flex;flex-direction:column;gap:8px}
+.skl{border-radius:6px;background:var(--nv2);position:relative;overflow:hidden}
+.skl.a{height:16px;width:30%}.skl.b{height:14px;width:70%}.skl.c{height:12px;width:40%}.skl.d{height:10px;width:55%}
+.ski::after,.skl::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent);animation:shimmer 1.4s infinite}
+.pcard{background:var(--ca);border-radius:14px;overflow:hidden;border:1px solid var(--cb);display:flex;cursor:pointer;transition:border-color .2s,transform .15s;animation:fadeUp .3s ease both}
+.pcard:hover{border-color:var(--cy);transform:translateY(-1px)}
+.pthumb{width:110px;min-height:110px;background:var(--nv2);display:flex;align-items:center;justify-content:center;font-size:45px;flex-shrink:0;overflow:hidden}
+.pthumb img{width:100%;height:100%;object-fit:cover}
+.pinfo{padding:12px;flex:1}
+.pinfo h4{font-family:'Syne',sans-serif;font-size:14px;margin-bottom:5px}
+.price{color:var(--cy);font-weight:700;font-size:15px;margin-bottom:6px}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.tag{background:var(--nv2);padding:2px 8px;border-radius:10px;font-size:10px;color:var(--mt);border:1px solid var(--cb)}
+.pseller{font-size:11px;color:var(--mt)}
+.ploc{font-size:11px;color:var(--mt);margin-top:2px}
+.vbtn{display:inline-block;margin-top:8px;padding:7px 14px;background:var(--cd);color:var(--cy);border:1px solid var(--cy);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s}
+.vbtn:hover{background:rgba(0,212,255,.25)}
+.empty{text-align:center;padding:60px 20px;color:var(--mt);animation:fadeUp .4s ease}
+.empty .eico{font-size:60px;margin-bottom:15px}
+.empty h3{margin-bottom:8px;color:var(--tx);font-family:'Syne',sans-serif}
+
+/* ════════════ PRODUCT ════════════ */
+.media{background:var(--nv2);padding:15px;border-bottom:1px solid var(--cb)}
+.mainimg{width:100%;height:220px;background:var(--nv);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:80px;margin-bottom:10px;border:1px solid var(--cb);overflow:hidden}
+.mainimg img{width:100%;height:100%;object-fit:cover;border-radius:14px}
+.thumbs{display:flex;gap:8px;overflow-x:auto} .thumbs::-webkit-scrollbar{display:none}
+.thumb{min-width:60px;height:60px;background:var(--nv);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;border:2px solid transparent;cursor:pointer;overflow:hidden}
+.thumb.on{border-color:var(--cy)}
+.pname{font-family:'Syne',sans-serif;font-size:21px;font-weight:800;margin-bottom:6px}
+.pprice{font-size:26px;color:var(--cy);font-weight:700;margin-bottom:15px}
+table{width:100%;border-collapse:collapse}
+table tr{border-bottom:1px solid rgba(255,255,255,.05)}
+table td{padding:9px 4px;font-size:13px}
+table td:first-child{color:var(--mt);width:40%;font-weight:500}
+.locitem{display:flex;align-items:center;gap:8px;padding:7px 0;font-size:13px;border-bottom:1px solid rgba(255,255,255,.05)}
+.locitem:last-child{border-bottom:none}
+.locitem .ll{color:var(--mt);font-weight:500;width:110px;font-size:12px;flex-shrink:0}
+.sprof{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.savatar{width:55px;height:55px;border-radius:50%;background:var(--nv2);display:flex;align-items:center;justify-content:center;font-size:28px;border:2px solid var(--cy);flex-shrink:0}
+.sname{font-family:'Syne',sans-serif;font-size:15px}
+.scat{font-size:12px;color:var(--mt);margin-top:2px}
+.otrow{display:flex;gap:10px;margin-bottom:15px}
+.otbtn{flex:1;padding:10px;border:1px solid var(--cb);border-radius:10px;background:var(--nv2);font-size:13px;color:var(--mt);cursor:pointer;text-align:center;font-family:'DM Sans',sans-serif;transition:all .2s}
+.otbtn.on{border-color:var(--cy);background:var(--cd);color:var(--tx);font-weight:600}
+.qtyrow{display:flex;align-items:center;gap:20px;margin-bottom:15px;justify-content:center}
+.qtybtn{width:36px;height:36px;border-radius:50%;border:2px solid var(--cy);background:transparent;font-size:20px;cursor:pointer;color:var(--cy);display:flex;align-items:center;justify-content:center}
+.qtybtn:hover{background:var(--cd)}
+.qtyn{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;min-width:30px;text-align:center}
+.confirm{display:none;background:var(--gd);border:1px solid rgba(39,174,96,.4);border-radius:10px;padding:12px 15px;margin-bottom:12px;font-size:13px;color:var(--gn);text-align:center}
+.shrhdr{background:var(--cd);border:1px solid var(--cb);color:var(--cy);padding:7px 13px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.shrgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.si{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 5px;border-radius:12px;transition:background .2s}
+.si:hover{background:var(--cd)} .si .sico{font-size:28px} .si span{font-size:10px;color:var(--mt);text-align:center}
+.cprow{display:flex;gap:8px}
+.cpinp{flex:1;padding:10px 12px;background:var(--nv2);border:1px solid var(--cb);border-radius:10px;font-size:12px;color:var(--tx);font-family:'DM Sans',sans-serif}
+.cpbtn{padding:10px 16px;background:var(--cy);color:var(--dk);border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.closebtn{width:100%;margin-top:12px;padding:11px;background:transparent;border:1px solid var(--cb);color:var(--mt);border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif}
+
+/* ════════════ ORDERS ════════════ */
+.tabs{background:var(--ca);display:flex;border-bottom:1px solid var(--cb);overflow-x:auto}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:12px 18px;font-size:12px;color:var(--mt);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s;font-weight:600}
+.tab.on{color:var(--cy);border-bottom-color:var(--cy)}
+.olist{padding:15px 15px 85px;display:flex;flex-direction:column;gap:15px}
+.ocard{background:var(--ca);border-radius:16px;border:1px solid var(--cb);overflow:hidden;animation:fadeUp .3s ease both}
+.ohdr{padding:14px 15px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--cb)}
+.oid{font-size:11px;color:var(--mt)} .odate{font-size:11px;color:var(--mt)}
+.badge{font-size:11px;padding:4px 12px;border-radius:20px;font-weight:600}
+.bp{background:rgba(243,156,18,.15);color:var(--og);border:1px solid rgba(243,156,18,.4)}
+.bc{background:rgba(52,152,219,.15);color:#3498db;border:1px solid rgba(52,152,219,.4)}
+.bo{background:var(--cd);color:var(--cy);border:1px solid var(--cb)}
+.bd{background:var(--gd);color:var(--gn);border:1px solid rgba(39,174,96,.4)}
+.bx{background:rgba(231,76,60,.15);color:var(--rd);border:1px solid rgba(231,76,60,.4)}
+.obody{padding:14px 15px;display:flex;gap:12px;align-items:center}
+.oico{width:55px;height:55px;background:var(--nv2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.oinf{flex:1}
+.oname{font-family:'Syne',sans-serif;font-size:14px;margin-bottom:4px}
+.oseller{font-size:12px;color:var(--mt);margin-bottom:4px}
+.oprice{font-size:14px;color:var(--cy);font-weight:700}
+.tracker{padding:0 15px 15px}
+.tsteps{display:flex;align-items:center;position:relative}
+.tline{flex:1;height:2px;background:var(--cb)}
+.tline.done{background:var(--cy)}
+.tstep{display:flex;flex-direction:column;align-items:center;gap:5px}
+.tdot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;border:2px solid var(--cb);background:var(--nv2);z-index:1}
+.tdot.done{background:var(--cy);border-color:var(--cy)}
+.tdot.active{background:var(--cd);border-color:var(--cy);animation:pulseDot 1.5s infinite}
+.tlbl{font-size:9px;color:var(--mt);text-align:center;max-width:50px;line-height:1.3}
+.tlbl.done,.tlbl.active{color:var(--cy)}
+.oacts{padding:0 15px 14px;display:flex;gap:8px}
+.abtn{flex:1;padding:9px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;border:none;text-align:center}
+.abtncancel{background:rgba(231,76,60,.15);color:var(--rd);border:1px solid rgba(231,76,60,.3)!important}
+.abtnreorder{background:var(--gd);color:var(--gn);border:1px solid rgba(39,174,96,.3)!important}
+.abtnwa{background:#25d366;color:#fff}
+.shopbtn{display:inline-block;background:linear-gradient(135deg,var(--nv2),var(--cy));color:var(--dk);padding:12px 24px;border-radius:20px;font-weight:700;font-family:'Syne',sans-serif;text-decoration:none;font-size:14px;border:none;cursor:pointer}
+
+/* ════════════ SELLERS OFFICE ════════════ */
+.ofchdr{justify-content:space-between}
+.ofchdr h1{flex:none}
+.nbtn{position:relative;background:var(--ca);border:1px solid var(--cb);border-radius:10px;padding:8px 10px;cursor:pointer;font-size:20px}
+.nbadge{position:absolute;top:-5px;right:-5px;background:red;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;display:flex;align-items:center;justify-content:center}
+.profsec{background:linear-gradient(135deg,var(--nv),var(--nv2));padding:20px 15px;display:flex;align-items:center;gap:15px;border-bottom:1px solid var(--cb)}
+.pavatar{width:70px;height:70px;border-radius:50%;background:var(--ca);display:flex;align-items:center;justify-content:center;font-size:35px;border:3px solid var(--cy);overflow:hidden;flex-shrink:0}
+.pinfo h2{font-family:'Syne',sans-serif;font-size:16px;margin-bottom:3px}
+.pceo{color:var(--cy);font-size:12px;margin-bottom:3px}
+.pcat{color:var(--mt);font-size:11px}
+.editbtn{margin-left:auto;background:transparent;border:1px solid var(--cy);color:var(--cy);padding:6px 12px;border-radius:15px;font-size:11px;cursor:pointer;flex-shrink:0;font-family:'DM Sans',sans-serif}
+.stats{display:flex;gap:10px;padding:15px}
+.stat{flex:1;background:var(--ca);border-radius:12px;padding:12px 8px;text-align:center;border:1px solid var(--cb)}
+.sn{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--cy)}
+.sl{font-size:10px;color:var(--mt);margin-top:3px} .st{font-size:10px;color:var(--gn);margin-top:2px}
+.dr{display:flex;align-items:center;gap:8px;padding:7px 0;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04)}
+.dr:last-child{border-bottom:none}
+.dr .dlbl{color:var(--mt);font-size:12px;width:100px;flex-shrink:0}
+.sechdr{display:flex;justify-content:space-between;align-items:center;padding:5px 15px 10px}
+.sechdr h3{font-family:'Syne',sans-serif;font-size:16px}
+.addbtn{background:linear-gradient(135deg,var(--nv2),var(--cy));color:var(--dk);border:none;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 15px 100px}
+.pc{background:var(--ca);border-radius:12px;overflow:hidden;border:1px solid var(--cb);animation:fadeUp .3s ease both}
+.pc:hover{border-color:var(--cy)}
+.pcimg{width:100%;height:100px;background:var(--nv2);display:flex;align-items:center;justify-content:center;font-size:40px;overflow:hidden}
+.pcimg img{width:100%;height:100%;object-fit:cover}
+.pcnfo{padding:10px}
+.pcnfo h4{font-size:12px;margin-bottom:4px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcpr{color:var(--cy);font-weight:700;font-size:13px;margin-bottom:4px}
+.pcst{font-size:10px;padding:3px 8px;border-radius:10px;display:inline-block;background:rgba(39,174,96,.15);color:var(--gn)}
+.pcacts{display:flex;gap:5px;margin-top:8px}
+.pcacts button{flex:1;padding:6px;border:none;border-radius:6px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.pce{background:var(--cd);color:var(--cy);border:1px solid var(--cb)!important}
+.pcd{background:rgba(231,76,60,.15);color:var(--rd);border:1px solid rgba(231,76,60,.3)!important}
+.addcard{background:var(--ca);border-radius:12px;border:2px dashed var(--cy);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:180px;cursor:pointer;gap:8px;transition:background .2s}
+.addcard:hover{background:var(--cd)}
+.addcard .plus{font-size:35px;color:var(--cy)}
+.addcard p{font-size:12px;color:var(--cy);font-weight:600}
+.imgup{border:2px dashed var(--cb);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:13px}
+.imgup:hover{border-color:var(--cy);background:var(--cd)}
+.imgup .uico{font-size:32px;margin-bottom:8px} .imgup p{font-size:13px;color:var(--mt);margin-bottom:4px} .imgup small{font-size:11px;color:var(--mt);opacity:.7}
+.ipgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.ipi{aspect-ratio:1;border-radius:8px;overflow:hidden;position:relative}
+.ipi img{width:100%;height:100%;object-fit:cover}
+.ipi .rm{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.7);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer}
+.nmodal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;align-items:center;justify-content:center;padding:20px}
+.nmodal.open{display:flex}
+.nbox{background:var(--ca);border-radius:16px;padding:20px;width:100%;max-width:360px;border:1px solid var(--cb)}
+.nbox h3{font-family:'Syne',sans-serif;font-size:16px;margin-bottom:14px}
+.niitem{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px;display:flex;gap:10px;align-items:flex-start}
+.niitem:last-child{border-bottom:none}
+.ndot{width:8px;height:8px;border-radius:50%;background:var(--cy);flex-shrink:0;margin-top:5px}
+.cnbtn{width:100%;margin-top:14px;padding:10px;background:var(--cd);border:1px solid var(--cy);color:var(--cy);border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600}
+.prrow{display:flex;gap:10px;align-items:center} .prrow input{flex:1} .prrow span{color:var(--mt);font-size:13px}
+
+/* ════════════ AI COWORKER ════════════ */
+#aibtn{position:fixed;bottom:75px;right:16px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#0d0d1a,var(--cy));border:2px solid var(--cy);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;z-index:200;box-shadow:0 0 18px rgba(0,212,255,.4);animation:aiPulse 3s ease-in-out infinite;transition:transform .2s}
+#aibtn:hover{transform:scale(1.1)}
+#aipanel{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;display:none;align-items:flex-end}
+#aipanel.open{display:flex}
+.aisheet{background:var(--nv);border-radius:24px 24px 0 0;border-top:2px solid var(--cy);width:100%;height:85vh;display:flex;flex-direction:column;animation:slideUp .35s cubic-bezier(.4,0,.2,1)}
+.aihdr{padding:14px 20px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--cb)}
+.aiav{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--nv2),var(--cy));display:flex;align-items:center;justify-content:center;font-size:18px;border:1px solid var(--cb)}
+.aihinfo h4{font-family:'Syne',sans-serif;font-size:14px} .aihinfo small{font-size:11px;color:var(--gn)}
+.aicl{margin-left:auto;background:transparent;border:none;color:var(--mt);font-size:24px;cursor:pointer}
+.aimsgs{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.aimsgs::-webkit-scrollbar{display:none}
+.aimsg{max-width:85%;padding:10px 14px;border-radius:16px;font-size:13px;line-height:1.5;animation:fadeUp .25s ease}
+.aimsg.bot{background:var(--ca);border:1px solid var(--cb);border-bottom-left-radius:4px;align-self:flex-start}
+.aimsg.user{background:linear-gradient(135deg,var(--nv2),rgba(0,212,255,.3));border:1px solid var(--cb);border-bottom-right-radius:4px;align-self:flex-end}
+.aityping{display:flex;gap:5px;align-items:center;padding:12px 16px;align-self:flex-start}
+.aityping span{width:7px;height:7px;border-radius:50%;background:var(--cy);opacity:.4;animation:typingDot 1.2s infinite}
+.aityping span:nth-child(2){animation-delay:.2s} .aityping span:nth-child(3){animation-delay:.4s}
+.aiqbtns{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 10px}
+.aiqbtn{background:var(--cd);border:1px solid var(--cb);color:var(--cy);padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
+.aiqbtn:hover{background:rgba(0,212,255,.25)}
+.aiinrow{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--cb)}
+.aiin{flex:1;padding:10px 14px;background:var(--ca);border:1px solid var(--cb);border-radius:24px;color:var(--tx);font-size:13px;font-family:'DM Sans',sans-serif;outline:none}
+.aiin::placeholder{color:var(--mt)} .aiin:focus{border-color:var(--cy)}
+.aisend{width:40px;height:40px;border-radius:50%;background:var(--cy);border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .2s}
+.aisend:disabled{opacity:.4;cursor:not-allowed}
+
+/* ════════════ ANIMATIONS ════════════ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+@keyframes aiPulse{0%,100%{box-shadow:0 0 18px rgba(0,212,255,.4)}50%{box-shadow:0 0 30px rgba(0,212,255,.7)}}
+@keyframes typingDot{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
+@keyframes pulseDot{0%,100%{box-shadow:0 0 0 0 rgba(0,212,255,.4)}50%{box-shadow:0 0 0 6px rgba(0,212,255,0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ═══════════ HOME VIEW ═══════════ -->
+<div class="view active" id="v-home">
+  <header>
+    <div class="logo">📡 Biz <span>Radar</span></div>
+    <button class="sell-btn" onclick="go('office')">Sell Here</button>
+  </header>
+  <div class="hero">
+    <h2>Find Products Near You</h2>
+    <p>Search local sellers from anywhere in the world</p>
+  </div>
+  <div class="pb">
+    <div class="scard">
+      <h3>🔍 Search Products</h3>
+      <div class="errmsg" id="herr"></div>
+      <div class="fg"><label>Product Name</label><input type="text" id="hprod" placeholder="e.g. Fresh Tomatoes, Ankara Dress..."></div>
+      <div class="fg"><label>Price Range</label><div class="row2"><input type="number" id="hmin" placeholder="Min" min="0"><span>to</span><input type="number" id="hmax" placeholder="Max" min="0"></div></div>
+      <div class="fg"><label>Size</label><input type="text" id="hsize" placeholder="e.g. Small, Medium, Large..."></div>
+      <div class="fg"><label>Colour</label><input type="text" id="hcol" placeholder="e.g. Red, Blue, Black..."></div>
+      <div class="fg"><label>Texture</label><input type="text" id="htex" placeholder="e.g. Smooth, Rough, Soft..."></div>
+      <div class="fg"><label>Material</label><input type="text" id="hmat" placeholder="e.g. Cotton, Wood, Plastic..."></div>
+      <div class="locrow">
+        <span class="loclbl">📍 Location</span>
+        <button class="gpsbtn" id="gpsbtn" onclick="getGPS()"><span>📡</span> Use My Location</button>
+      </div>
+      <div class="gpsbanner" id="gpsbanner"></div>
+      <div class="fg"><label>Continent</label>
+        <select id="hcont">
+          <option value="">All Continents</option>
+          <option value="africa">Africa</option><option value="asia">Asia</option>
+          <option value="europe">Europe</option><option value="north_america">North America</option>
+          <option value="south_america">South America</option><option value="australia">Australia & Oceania</option>
+        </select>
+      </div>
+      <div class="fg"><label>Country</label><input type="text" id="hcountry" placeholder="e.g. Kenya, Nigeria, India..."></div>
+      <div class="fg"><label>County / State</label><input type="text" id="hcounty" placeholder="e.g. Nairobi, Lagos..."></div>
+      <div class="fg"><label>Subcounty</label><input type="text" id="hsubc" placeholder="Enter subcounty..."></div>
+      <div class="fg"><label>District</label><input type="text" id="hdist" placeholder="Enter district..."></div>
+      <button class="sbtn" onclick="doSearch()">📡 RADAR SEARCH</button>
+    </div>
+    <div class="sectitle">Browse by Category</div>
+    <div class="cats">
+      <div class="cat" onclick="quickCat('food')"><div class="caticon">🍎</div>Food</div>
+      <div class="cat" onclick="quickCat('fashion')"><div class="caticon">👗</div>Fashion</div>
+      <div class="cat" onclick="quickCat('electronics')"><div class="caticon">📱</div>Electronics</div>
+      <div class="cat" onclick="quickCat('furniture')"><div class="caticon">🪑</div>Furniture</div>
+      <div class="cat" onclick="quickCat('crafts')"><div class="caticon">🎨</div>Crafts</div>
+      <div class="cat" onclick="quickCat('agriculture')"><div class="caticon">🌾</div>Agriculture</div>
+      <div class="cat" onclick="quickCat('beauty')"><div class="caticon">💄</div>Beauty</div>
+      <div class="cat" onclick="quickCat('other')"><div class="caticon">📦</div>Other</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <button class="on" onclick="go('home')"><span class="ni">🏠</span>Home</button>
+    <button onclick="go('results')"><span class="ni">🔍</span>Search</button>
+    <button onclick="go('office')"><span class="ni">🏪</span>Sell</button>
+    <button onclick="go('orders')"><span class="ni">📦</span>Orders</button>
+  </nav>
+</div>
+
+<!-- ═══════════ RESULTS VIEW ═══════════ -->
+<div class="view" id="v-results">
+  <header>
+    <button class="back" onclick="go('home')">←</button>
+    <h1>📡 Search Results</h1>
+  </header>
+  <div class="summary"><div id="rsummary">Searching...</div><button class="rfbtn" onclick="go('home')">🔧 Refine</button></div>
+  <div class="sortbar">
+    <button class="sortbtn on" onclick="rsort('default',this)">Default</button>
+    <button class="sortbtn" onclick="rsort('price_low',this)">Price: Low ↑</button>
+    <button class="sortbtn" onclick="rsort('price_high',this)">Price: High ↓</button>
+    <button class="sortbtn" onclick="rsort('newest',this)">Newest</button>
+  </div>
+  <div class="rcount" id="rcount"></div>
+  <div class="rlist" id="rlist"></div>
+  <nav class="nav">
+    <button onclick="go('home')"><span class="ni">🏠</span>Home</button>
+    <button class="on"><span class="ni">🔍</span>Search</button>
+    <button onclick="go('office')"><span class="ni">🏪</span>Sell</button>
+    <button onclick="go('orders')"><span class="ni">📦</span>Orders</button>
+  </nav>
+</div>
+
+<!-- ═══════════ PRODUCT VIEW ═══════════ -->
+<div class="view" id="v-product">
+  <header>
+    <button class="back" onclick="go('results')">←</button>
+    <h1>📦 Product Details</h1>
+    <button class="shrhdr" onclick="openShare()">🔗 Share</button>
+  </header>
+  <div class="media">
+    <div class="mainimg" id="pmainimg">📦</div>
+    <div class="thumbs" id="pthumbs"><div class="thumb on" id="pt0">📦</div></div>
+  </div>
+  <div class="card">
+    <div class="pname" id="ppname">Loading...</div>
+    <div class="pprice" id="ppprice">$0.00</div>
+    <table>
+      <tr><td>📏 Size</td><td id="pdsize">-</td></tr>
+      <tr><td>🎨 Colour</td><td id="pdcol">-</td></tr>
+      <tr><td>✋ Texture</td><td id="pdtex">-</td></tr>
+      <tr><td>🧱 Material</td><td id="pdmat">-</td></tr>
+      <tr><td>📦 Details</td><td id="pdother">-</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h3>📍 Location</h3>
+    <div class="locitem"><span class="ll">Continent</span><span id="plcont">-</span></div>
+    <div class="locitem"><span class="ll">Country</span><span id="plcountry">-</span></div>
+    <div class="locitem"><span class="ll">County/State</span><span id="plcounty">-</span></div>
+    <div class="locitem"><span class="ll">Subcounty</span><span id="plsubc">-</span></div>
+    <div class="locitem"><span class="ll">District</span><span id="pldist">-</span></div>
+    <div class="locitem"><span class="ll">Other</span><span id="plother">-</span></div>
+  </div>
+  <div class="card">
+    <h3>🏪 Seller</h3>
+    <div class="sprof"><div class="savatar">👤</div><div><div class="sname" id="psname">-</div><div class="scat" id="psscat">-</div></div></div>
+  </div>
+  <div class="card">
+    <h3>📞 Contact Seller</h3>
+    <button class="contact-btn bwa" id="pwa" onclick="contactWA()"><span>💬</span> Chat on WhatsApp</button>
+    <a class="contact-btn bph" id="pph" href="#"><span>📱</span><span id="pcphone">Call Seller</span></a>
+    <a class="contact-btn bem" id="pem" href="#"><span>📧</span><span id="pcemail">Email Seller</span></a>
+    <a class="contact-btn bwb" id="pwb" href="#" target="_blank"><span>🌐</span><span id="pcurl">Visit Website</span></a>
+  </div>
+  <div class="card">
+    <h3>🚚 Logistics</h3>
+    <div class="lbadge" id="plbadge">-</div>
+  </div>
+  <div class="card pb">
+    <h3>🛒 Place Order</h3>
+    <div class="otrow">
+      <button class="otbtn on" onclick="setOT('unique',this)">☝️ Unique<br><small>Single item</small></button>
+      <button class="otbtn" onclick="setOT('multiple',this)">📦 Multiple<br><small>More than one</small></button>
+    </div>
+    <div class="qtyrow" id="pqtyrow" style="display:none">
+      <button class="qtybtn" onclick="chgQty(-1)">−</button>
+      <div class="qtyn" id="pqtyn">1</div>
+      <button class="qtybtn" onclick="chgQty(1)">+</button>
+    </div>
+    <div class="confirm" id="pconfirm">✅ Order sent! The seller will contact you shortly.</div>
+    <button class="btn-cy" style="width:100%;padding:15px;font-size:16px" onclick="placeOrder()">✅ ORDER NOW</button>
+  </div>
+  <!-- Share Modal -->
+  <div class="mo" id="shareModal">
+    <div class="modal">
+      <div class="mh"></div>
+      <h3 style="font-family:'Syne',sans-serif;font-size:16px;margin-bottom:16px;text-align:center">🔗 Share this Product</h3>
+      <div class="shrgrid">
+        <div class="si" onclick="shareVia('whatsapp')"><span class="sico">💬</span><span>WhatsApp</span></div>
+        <div class="si" onclick="shareVia('facebook')"><span class="sico">📘</span><span>Facebook</span></div>
+        <div class="si" onclick="shareVia('twitter')"><span class="sico">🐦</span><span>Twitter/X</span></div>
+        <div class="si" onclick="shareVia('telegram')"><span class="sico">✈️</span><span>Telegram</span></div>
+        <div class="si" onclick="shareVia('sms')"><span class="sico">💬</span><span>SMS</span></div>
+        <div class="si" onclick="shareVia('email')"><span class="sico">📧</span><span>Email</span></div>
+        <div class="si" onclick="shareVia('native')"><span class="sico">📤</span><span>More</span></div>
+        <div class="si" onclick="copyLink()"><span class="sico">🔗</span><span>Copy Link</span></div>
+      </div>
+      <div class="cprow"><input type="text" class="cpinp" id="psharelink" readonly><button class="cpbtn" onclick="copyLink()">📋 Copy</button></div>
+      <button class="closebtn" onclick="closeShare()">✕ Close</button>
+    </div>
+  </div>
+  <nav class="nav">
+    <button onclick="go('home')"><span class="ni">🏠</span>Home</button>
+    <button onclick="go('results')"><span class="ni">🔍</span>Search</button>
+    <button onclick="go('office')"><span class="ni">🏪</span>Sell</button>
+    <button onclick="go('orders')"><span class="ni">📦</span>Orders</button>
+  </nav>
+</div>
+
+<!-- ═══════════ ORDERS VIEW ═══════════ -->
+<div class="view" id="v-orders">
+  <header>
+    <button class="back" onclick="go('home')">←</button>
+    <h1>📦 My Orders</h1>
+  </header>
+  <div class="tabs">
+    <div class="tab on" onclick="ofilter('all',this)">All Orders</div>
+    <div class="tab" onclick="ofilter('pending',this)">Pending</div>
+    <div class="tab" onclick="ofilter('confirmed',this)">Confirmed</div>
+    <div class="tab" onclick="ofilter('on_the_way',this)">On the Way</div>
+    <div class="tab" onclick="ofilter('delivered',this)">Delivered</div>
+  </div>
+  <div class="olist" id="olist"></div>
+  <nav class="nav">
+    <button onclick="go('home')"><span class="ni">🏠</span>Home</button>
+    <button onclick="go('results')"><span class="ni">🔍</span>Search</button>
+    <button onclick="go('office')"><span class="ni">🏪</span>Sell</button>
+    <button class="on"><span class="ni">📦</span>Orders</button>
+  </nav>
+</div>
+
+<!-- ═══════════ SELLERS OFFICE VIEW ═══════════ -->
+<div class="view" id="v-office">
+  <header class="ofchdr">
+    <h1>📡 E-Office</h1>
+    <button class="nbtn" onclick="openNotif()">🔔<span class="nbadge" id="nbadge">3</span></button>
+  </header>
+  <div class="profsec">
+    <div class="pavatar">👤</div>
+    <div class="pinfo"><h2 id="osname">My Store</h2><div class="pceo" id="osceo">CEO: -</div><div class="pcat" id="oscat">-</div></div>
+    <button class="editbtn">✏️ Edit</button>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="sn" id="otprod">0</div><div class="sl">Products</div><div class="st" id="optrend"></div></div>
+    <div class="stat"><div class="sn" id="otorders">0</div><div class="sl">Orders</div><div class="st">↑ Today</div></div>
+    <div class="stat"><div class="sn" id="otviews">0</div><div class="sl">Views</div><div class="st">↑ +12 today</div></div>
+  </div>
+  <div class="card">
+    <h3>🏪 Store Details</h3>
+    <div class="dr"><span class="dlbl">📍 Country</span><span id="odcountry">-</span></div>
+    <div class="dr"><span class="dlbl">🗺️ County</span><span id="odcounty">-</span></div>
+    <div class="dr"><span class="dlbl">🚚 Logistics</span><span id="odlog">-</span></div>
+    <div class="dr"><span class="dlbl">💰 Price Range</span><span id="odprice">-</span></div>
+    <div class="dr"><span class="dlbl">🌐 Website</span><span id="odurl">-</span></div>
+    <div class="dr"><span class="dlbl">📱 Phone</span><span id="odphone">-</span></div>
+  </div>
+  <div class="sechdr"><h3>🛍️ My Products</h3><button class="addbtn" onclick="openProd()">+ Add Product</button></div>
+  <div class="pgrid" id="opgrid"><div class="addcard" onclick="openProd()"><div class="plus">+</div><p>Add Product</p></div></div>
+  <!-- Add/Edit Product Modal -->
+  <div class="mo" id="prodModal">
+    <div class="modal">
+      <div class="mh"></div>
+      <div class="mhd"><h3 id="omtitle">➕ Add New Product</h3><button class="mcl" onclick="closeProd()">×</button></div>
+      <div class="merr" id="omerr">⚠️ Please fill in required fields!</div>
+      <div class="fg"><label>Product Photos</label>
+        <div class="imgup" onclick="document.getElementById('oimgin').click()">
+          <div class="uico">📸</div><p>Tap to upload product photos</p><small>JPG, PNG up to 5MB • Max 5 photos</small>
+          <input type="file" id="oimgin" accept="image/*" multiple style="display:none" onchange="prevImgs(event)">
+        </div>
+        <div class="ipgrid" id="oipgrid"></div>
+      </div>
+      <div class="fg"><label>Product Name *</label><input type="text" id="opname" placeholder="e.g. Fresh Tomatoes"></div>
+      <div class="fg"><label>Price *</label><div class="prrow"><input type="number" id="opmin" placeholder="Min price" min="0" step="0.01"><span>to</span><input type="number" id="opmax" placeholder="Max (optional)" min="0" step="0.01"></div></div>
+      <div class="fg"><label>Category *</label>
+        <select id="opcat">
+          <option value="">Select category</option>
+          <option value="food">🍎 Food & Groceries</option><option value="fashion">👗 Clothing & Fashion</option>
+          <option value="electronics">📱 Electronics</option><option value="furniture">🪑 Furniture</option>
+          <option value="crafts">🎨 Crafts & Handmade</option><option value="agriculture">🌾 Agriculture</option>
+          <option value="beauty">💄 Beauty & Health</option><option value="other">📦 Other</option>
+        </select>
+      </div>
+      <div class="fg"><label>Size</label><input type="text" id="opsize" placeholder="e.g. Small, Medium, 5kg..."></div>
+      <div class="fg"><label>Colour</label><input type="text" id="opcol" placeholder="e.g. Red, Blue..."></div>
+      <div class="fg"><label>Texture</label><input type="text" id="optex" placeholder="e.g. Smooth, Rough..."></div>
+      <div class="fg"><label>Material</label><input type="text" id="opmat" placeholder="e.g. Cotton, Wood..."></div>
+      <div class="fg"><label>Description</label><textarea id="opdesc" placeholder="Describe your product..."></textarea></div>
+      <div class="fg"><label>Stock Available</label><input type="number" id="opstock" placeholder="How many?" min="1"></div>
+      <button class="btn-cy" style="width:100%;padding:14px;font-size:15px;margin-top:5px" onclick="saveProd()">✅ SAVE PRODUCT</button>
+    </div>
+  </div>
+  <!-- Notifications Modal -->
+  <div class="nmodal" id="notifModal">
+    <div class="nbox">
+      <h3>🔔 Notifications</h3>
+      <div class="niitem"><div class="ndot"></div><div>John ordered Fresh Tomatoes — just now</div></div>
+      <div class="niitem"><div class="ndot"></div><div>Sarah viewed your store — 5 mins ago</div></div>
+      <div class="niitem"><div class="ndot"></div><div>New message from a buyer — 1 hour ago</div></div>
+      <button class="cnbtn" onclick="closeNotif()">✓ Mark all as read</button>
+    </div>
+  </div>
+  <nav class="nav">
+    <button onclick="go('home')"><span class="ni">🏠</span>Home</button>
+    <button onclick="go('results')"><span class="ni">🔍</span>Search</button>
+    <button class="on"><span class="ni">🏪</span>My Store</button>
+    <button onclick="go('orders')"><span class="ni">📦</span>Orders</button>
+  </nav>
+</div>
+
+</div><!-- end #app -->
+
+<!-- ═══════════ AI COWORKER ═══════════ -->
+<div id="aibtn" onclick="aiOpen()" title="Radar AI">📡</div>
+<div id="aipanel" onclick="aiBackdrop(event)">
+  <div class="aisheet">
+    <div class="aihdr">
+      <div class="aiav">📡</div>
+      <div class="aihinfo"><h4>Radar AI</h4><small id="ailabel">● Assistant</small></div>
+      <button class="aicl" onclick="aiClose()">×</button>
+    </div>
+    <div class="aimsgs" id="aimsgs"></div>
+    <div class="aiqbtns" id="aiqbtns"></div>
+    <div class="aiinrow">
+      <input class="aiin" id="aiin" type="text" placeholder="Ask me anything..." onkeydown="if(event.key==='Enter')aiSend()">
+      <button class="aisend" id="aisend" onclick="aiSend()">➤</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
+const DB=[
+  {id:1,name:"Fresh Tomatoes",price:1.50,emoji:"🍅",cat:"food",size:"Medium",colour:"Red",texture:"Smooth",material:"Natural",details:"Freshly harvested, organic",continent:"Africa",country:"Kenya",county:"Nairobi",subcounty:"Westlands",district:"Parklands",otherLoc:"Near the market",seller:"Mary's Farm",sellerCat:"Food & Groceries",phone:"+254712345678",email:"mary@marysfarm.com",url:"https://marysfarm.com",logistics:"Local Delivery",loc:"Nairobi, Kenya"},
+  {id:2,name:"Ankara Dress",price:15.00,emoji:"👗",cat:"fashion",size:"L",colour:"Multicolour",texture:"Smooth",material:"Cotton",details:"Handmade, authentic Ankara print",continent:"Africa",country:"Nigeria",county:"Lagos",subcounty:"Ikeja",district:"Central",seller:"Ade Fashion",sellerCat:"Clothing & Fashion",phone:"+2348012345678",email:"ade@adefashion.com",url:"",logistics:"National Delivery",loc:"Lagos, Nigeria"},
+  {id:3,name:"Phone Case",price:3.50,emoji:"📱",cat:"electronics",size:"Universal",colour:"Black",texture:"Rough",material:"Plastic",details:"Fits most smartphones",continent:"Africa",country:"Ghana",county:"Accra",subcounty:"Osu",district:"Cantonments",seller:"Tech Shop",sellerCat:"Electronics",phone:"+233201234567",email:"info@techshop.com",url:"",logistics:"Local Delivery",loc:"Accra, Ghana"},
+  {id:4,name:"Handmade Basket",price:8.00,emoji:"🧺",cat:"crafts",size:"Large",colour:"Brown",texture:"Rough",material:"Straw",details:"Traditional handwoven",continent:"Africa",country:"Uganda",county:"Kampala",subcounty:"Nakasero",district:"Central",seller:"Craft World",sellerCat:"Crafts & Handmade",phone:"+256701234567",email:"crafts@craftworld.com",url:"",logistics:"Local Delivery",loc:"Kampala, Uganda"},
+  {id:5,name:"Rice 5kg",price:5.00,emoji:"🍚",cat:"food",size:"5kg",colour:"White",texture:"Smooth",material:"Natural",details:"Premium quality long grain",continent:"Africa",country:"Tanzania",county:"Dar es Salaam",subcounty:"",district:"",seller:"Grain Store",sellerCat:"Food & Groceries",phone:"+255712345678",email:"",url:"",logistics:"Local Delivery",loc:"Dar es Salaam, Tanzania"},
+  {id:6,name:"Wooden Chair",price:25.00,emoji:"🪑",cat:"furniture",size:"Standard",colour:"Brown",texture:"Smooth",material:"Wood",details:"Hand-carved solid mahogany",continent:"Africa",country:"Kenya",county:"Nairobi",subcounty:"",district:"",seller:"Wood Works",sellerCat:"Furniture",phone:"+254701234567",email:"",url:"",logistics:"Local Delivery",loc:"Nairobi, Kenya"},
+  {id:7,name:"T-Shirt",price:7.00,emoji:"👕",cat:"fashion",size:"XL",colour:"Blue",texture:"Soft",material:"Cotton",details:"100% cotton breathable",continent:"Africa",country:"Nigeria",county:"Lagos",subcounty:"",district:"",seller:"Fashion Hub",sellerCat:"Clothing & Fashion",phone:"+2348098765432",email:"",url:"",logistics:"National Delivery",loc:"Lagos, Nigeria"},
+  {id:8,name:"Earphones",price:10.00,emoji:"🎧",cat:"electronics",size:"One Size",colour:"Black",texture:"Smooth",material:"Plastic",details:"Clear sound, noise cancelling",continent:"Africa",country:"Ghana",county:"Accra",subcounty:"",district:"",seller:"Electronics Plus",sellerCat:"Electronics",phone:"+233209876543",email:"",url:"",logistics:"Local Delivery",loc:"Accra, Ghana"},
+  {id:9,name:"Silk Saree",price:22.00,emoji:"🧣",cat:"fashion",size:"One Size",colour:"Red",texture:"Smooth",material:"Silk",details:"Traditional Indian weave",continent:"Asia",country:"India",county:"Mumbai",subcounty:"",district:"",seller:"Mumbai Textiles",sellerCat:"Clothing & Fashion",phone:"+912212345678",email:"",url:"",logistics:"International",loc:"Mumbai, India"},
+  {id:10,name:"Olive Oil 1L",price:9.00,emoji:"🫙",cat:"food",size:"1L",colour:"Yellow",texture:"Smooth",material:"Natural",details:"Extra virgin cold pressed",continent:"Europe",country:"Greece",county:"Crete",subcounty:"",district:"",seller:"Greek Farm",sellerCat:"Food & Groceries",phone:"+302812345678",email:"",url:"",logistics:"International",loc:"Crete, Greece"},
+  {id:11,name:"Coffee Beans",price:12.00,emoji:"☕",cat:"food",size:"500g",colour:"Brown",texture:"Rough",material:"Natural",details:"Single origin specialty",continent:"Africa",country:"Ethiopia",county:"Jimma",subcounty:"",district:"",seller:"Ethiopia Beans",sellerCat:"Food & Groceries",phone:"+251912345678",email:"",url:"",logistics:"International",loc:"Jimma, Ethiopia"},
+  {id:12,name:"Handmade Rug",price:45.00,emoji:"🪞",cat:"crafts",size:"Large",colour:"Multicolour",texture:"Rough",material:"Wool",details:"Traditional Moroccan design",continent:"Africa",country:"Morocco",county:"Marrakech",subcounty:"",district:"",seller:"Moroccan Arts",sellerCat:"Crafts & Handmade",phone:"+212612345678",email:"",url:"",logistics:"International",loc:"Marrakech, Morocco"},
+];
+
+const SAMPLE_ORDERS=[
+  {id:'ORD001',productName:"Fresh Tomatoes",emoji:"🍅",seller:"Mary's Farm",quantity:2,price:3.00,status:'on_the_way',date:'20 Feb 2026',phone:'+254712345678'},
+  {id:'ORD002',productName:"Ankara Dress",emoji:"👗",seller:"Ade Fashion",quantity:1,price:15.00,status:'confirmed',date:'19 Feb 2026',phone:'+2348012345678'},
+  {id:'ORD003',productName:"Handmade Basket",emoji:"🧺",seller:"Craft World",quantity:1,price:8.00,status:'delivered',date:'15 Feb 2026',phone:'+256701234567'},
+  {id:'ORD004',productName:"Coffee Beans",emoji:"☕",seller:"Ethiopia Beans",quantity:3,price:36.00,status:'pending',date:'20 Feb 2026',phone:'+251912345678'},
+];
+
+// ═══════════════════════════════════════════
+// ROUTER
+// ═══════════════════════════════════════════
+let curView='home';
+function go(view){
+  const cur=document.getElementById('v-'+curView);
+  cur.classList.add('exit');
+  setTimeout(()=>{
+    cur.classList.remove('active','exit');
+    curView=view;
+    const next=document.getElementById('v-'+view);
+    next.classList.add('active');
+    next.scrollTop=0;
+    window.scrollTo(0,0);
+    aiUpdateContext(view);
+    if(view==='results') loadResults();
+    if(view==='orders') loadOrders();
+    if(view==='office') loadSeller();
+  },250);
+}
+
+// ═══════════════════════════════════════════
+// HOME / SEARCH
+// ═══════════════════════════════════════════
+const CMAP={africa:'DZ,AO,BJ,BW,BF,BI,CM,CV,CF,TD,KM,CG,CD,CI,DJ,EG,GQ,ER,ET,GA,GM,GH,GN,GW,KE,LS,LR,LY,MG,MW,ML,MR,MU,MA,MZ,NA,NE,NG,RW,ST,SN,SL,SO,ZA,SS,SD,SZ,TZ,TG,TN,UG,ZM,ZW',asia:'AF,AM,AZ,BH,BD,BT,BN,KH,CN,CY,GE,IN,ID,IR,IQ,IL,JP,JO,KZ,KW,KG,LA,LB,MY,MV,MN,MM,NP,KP,OM,PK,PH,QA,SA,SG,LK,SY,TW,TJ,TH,TL,TR,TM,AE,UZ,VN,YE',europe:'AL,AD,AT,BY,BE,BA,BG,HR,CZ,DK,EE,FI,FR,DE,GR,HU,IS,IE,IT,LV,LI,LT,LU,MT,MD,MC,ME,NL,MK,NO,PL,PT,RO,RU,SM,RS,SK,SI,ES,SE,CH,UA,GB,VA',north_america:'AG,BS,BB,BZ,CA,CR,CU,DM,DO,SV,GD,GT,HT,HN,JM,MX,NI,PA,KN,LC,VC,TT,US',south_america:'AR,BO,BR,CL,CO,EC,GY,PY,PE,SR,UY,VE',australia:'AU,FJ,KI,MH,FM,NR,NZ,PW,PG,WS,SB,TO,TV,VU'};
+
+function getCont(code){if(!code)return'';const u=code.toUpperCase();for(const[c,v]of Object.entries(CMAP))if(v.split(',').includes(u))return c;return'';}
+
+async function getGPS(){
+  const btn=document.getElementById('gpsbtn'),ban=document.getElementById('gpsbanner');
+  if(!navigator.geolocation){showHerr('GPS not supported.');return;}
+  btn.disabled=true;btn.classList.add('loading');btn.innerHTML='<span>📡</span> Locating...';
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    try{
+      const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`);
+      const d=await r.json();const a=d.address;
+      if(a.country)g('hcountry').value=a.country;
+      if(a.state||a.region)g('hcounty').value=a.state||a.region;
+      if(a.suburb||a.town||a.city_district)g('hsubc').value=a.suburb||a.town||a.city_district;
+      if(a.district||a.county)g('hdist').value=a.district||a.county;
+      const c=getCont(a.country_code);if(c)g('hcont').value=c;
+      const city=a.city||a.town||a.village||a.state;
+      ban.textContent=`✅ Location found: ${city?city+', ':''}${a.country}`;ban.style.display='block';
+      btn.innerHTML='<span>✅</span> Located!';
+    }catch(e){btn.disabled=false;btn.classList.remove('loading');btn.innerHTML='<span>📡</span> Use My Location';showHerr('Could not read location.');}
+  },e=>{btn.disabled=false;btn.classList.remove('loading');btn.innerHTML='<span>📡</span> Use My Location';const m={1:'Location access denied.',2:'Could not detect.',3:'Timed out.'};showHerr(m[e.code]||'Could not get location.');},{timeout:10000});
+}
+
+function showHerr(msg){const el=g('herr');el.textContent='⚠️ '+msg;el.style.display='block';el.scrollIntoView({behavior:'smooth',block:'center'});}
+
+function doSearch(){
+  const prod=g('hprod').value.trim(),country=g('hcountry').value.trim(),cont=g('hcont').value,county=g('hcounty').value.trim(),min=g('hmin').value,max=g('hmax').value;
+  g('herr').style.display='none';
+  if(!prod&&!country&&!cont&&!county){showHerr('Please enter at least a product name or location!');return;}
+  if(min&&max&&parseFloat(min)>parseFloat(max)){showHerr('Min price cannot be greater than max price!');return;}
+  window._SP={product:prod,minPrice:min,maxPrice:max,size:g('hsize').value.trim(),colour:g('hcol').value.trim(),texture:g('htex').value.trim(),material:g('hmat').value.trim(),continent:cont,country,county,subcounty:g('hsubc').value.trim(),district:g('hdist').value.trim()};
+  go('results');
+}
+
+function quickCat(cat){window._SP={category:cat};go('results');}
+
+// ═══════════════════════════════════════════
+// RESULTS
+// ═══════════════════════════════════════════
+let rfil=[],rorig=[];
+
+function skeleton(){
+  g('rlist').innerHTML=Array(4).fill(`<div class="sk"><div class="ski"></div><div class="skb"><div class="skl a"></div><div class="skl b"></div><div class="skl c"></div><div class="skl d"></div></div></div>`).join('');
+  g('rcount').textContent='Searching...';
+}
+
+function loadResults(){
+  skeleton();
+  setTimeout(()=>{
+    const p=window._SP||{};
+    let txt='';if(p.product)txt+=`"${p.product}" `;if(p.country)txt+=`in ${p.country} `;if(p.category)txt+=`Category: ${p.category}`;
+    g('rsummary').innerHTML=`Searching: <span>${txt||'All Products'}</span>`;
+    rfil=DB.filter(x=>{
+      if(p.product&&!x.name.toLowerCase().includes(p.product.toLowerCase()))return false;
+      if(p.colour&&!x.colour.toLowerCase().includes(p.colour.toLowerCase()))return false;
+      if(p.size&&!x.size.toLowerCase().includes(p.size.toLowerCase()))return false;
+      if(p.material&&!x.material.toLowerCase().includes(p.material.toLowerCase()))return false;
+      if(p.texture&&!x.texture.toLowerCase().includes(p.texture.toLowerCase()))return false;
+      if(p.country&&!x.country.toLowerCase().includes(p.country.toLowerCase()))return false;
+      if(p.continent&&x.continent.toLowerCase()!==p.continent.toLowerCase())return false;
+      if(p.category&&x.cat!==p.category)return false;
+      if(p.minPrice&&x.price<parseFloat(p.minPrice))return false;
+      if(p.maxPrice&&x.price>parseFloat(p.maxPrice))return false;
+      return true;
+    });
+    rorig=[...rfil];renderResults();
+  },700);
+}
+
+function renderResults(){
+  const list=g('rlist');
+  if(!rfil.length){g('rcount').textContent='0 found';list.innerHTML=`<div class="empty"><div class="eico">📡</div><h3>No products found</h3><p>Try different filters</p><br><button class="shopbtn" onclick="go('home')">← Back to Search</button></div>`;return;}
+  g('rcount').textContent=`${rfil.length} product(s) found`;
+  list.innerHTML=rfil.map((p,i)=>`<div class="pcard" style="animation-delay:${i*.06}s" onclick="viewProduct(${p.id})"><div class="pthumb">${p.emoji}</div><div class="pinfo"><h4>${p.name}</h4><div class="price">$${p.price.toFixed(2)}</div><div class="tags">${p.size?`<span class="tag">📏 ${p.size}</span>`:''} ${p.colour?`<span class="tag">🎨 ${p.colour}</span>`:''} ${p.material?`<span class="tag">🧱 ${p.material}</span>`:''}</div><div class="pseller">🏪 ${p.seller}</div><div class="ploc">📍 ${p.loc}</div><button class="vbtn" onclick="event.stopPropagation();viewProduct(${p.id})">View & Order</button></div></div>`).join('');
+}
+
+function rsort(type,btn){
+  document.querySelectorAll('.sortbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  if(type==='price_low')rfil.sort((a,b)=>a.price-b.price);
+  else if(type==='price_high')rfil.sort((a,b)=>b.price-a.price);
+  else if(type==='newest')rfil.sort((a,b)=>b.id-a.id);
+  else rfil=[...rorig];
+  renderResults();
+}
+
+function viewProduct(id){window._PID=id;go('product');loadProduct();}
+
+// ═══════════════════════════════════════════
+// PRODUCT
+// ═══════════════════════════════════════════
+let _p=null,_qty=1,_ot='unique';
+
+function loadProduct(){
+  _p=DB.find(x=>x.id===window._PID)||DB[0];
+  const s=id=>document.getElementById(id);
+  s('ppname').textContent=_p.name; s('ppprice').textContent='$'+_p.price.toFixed(2);
+  s('pmainimg').textContent=_p.emoji; s('pt0').textContent=_p.emoji;
+  s('pdsize').textContent=_p.size||'-'; s('pdcol').textContent=_p.colour||'-';
+  s('pdtex').textContent=_p.texture||'-'; s('pdmat').textContent=_p.material||'-'; s('pdother').textContent=_p.details||'-';
+  s('plcont').textContent=_p.continent||'-'; s('plcountry').textContent=_p.country||'-';
+  s('plcounty').textContent=_p.county||'-'; s('plsubc').textContent=_p.subcounty||'-';
+  s('pldist').textContent=_p.district||'-'; s('plother').textContent=_p.otherLoc||'-';
+  s('psname').textContent=_p.seller||'-'; s('psscat').textContent=_p.sellerCat||'-';
+  s('plbadge').textContent=_p.logistics||'-';
+  s('pconfirm').style.display='none';_qty=1;_ot='unique';
+  document.querySelectorAll('.otbtn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.otbtn')[0].classList.add('on');
+  s('pqtyrow').style.display='none'; s('pqtyn').textContent='1';
+  if(_p.phone){s('pcphone').textContent=_p.phone;s('pph').href='tel:'+_p.phone;}
+  if(_p.email){s('pcemail').textContent=_p.email;s('pem').href=`mailto:${_p.email}?subject=Inquiry about ${encodeURIComponent(_p.name)}`;}
+  if(_p.url){s('pcurl').textContent=_p.url;s('pwb').href=_p.url.startsWith('http')?_p.url:'https://'+_p.url;}else s('pwb').style.display='none';
+  s('psharelink').value=`https://bizradar.app/product?id=${_p.id}`;
+}
+
+function contactWA(){window.open(`https://wa.me/${_p.phone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hello! I found "${_p.name}" on Biz Radar. I'm interested!`)}`,'_blank');}
+
+function setOT(type,btn){_ot=type;document.querySelectorAll('.otbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');g('pqtyrow').style.display=type==='multiple'?'flex':'none';if(type==='unique')_qty=1;}
+function chgQty(n){_qty=Math.max(1,_qty+n);g('pqtyn').textContent=_qty;}
+
+function placeOrder(){
+  const c=g('pconfirm');c.style.display='block';c.scrollIntoView({behavior:'smooth',block:'center'});
+  const order={id:'ORD'+Date.now(),productName:_p.name,emoji:_p.emoji,seller:_p.seller,quantity:_qty,price:_p.price*_qty,status:'pending',date:new Date().toLocaleDateString()};
+  const orders=JSON.parse(sessionStorage.getItem('myOrders')||'[]');orders.unshift(order);sessionStorage.setItem('myOrders',JSON.stringify(orders));
+  if(_p.phone)setTimeout(()=>window.open(`https://wa.me/${_p.phone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hi! I'd like to order ${_qty}x "${_p.name}". Please confirm.`)}`,'_blank'),800);
+}
+
+function openShare(){g('shareModal').classList.add('open');}
+function closeShare(){g('shareModal').classList.remove('open');}
+
+function shareVia(platform){
+  const url=encodeURIComponent(`https://bizradar.app/product?id=${_p.id}`),text=encodeURIComponent(`Check out "${_p.name}" on Biz Radar! $${_p.price.toFixed(2)} 🌍`);
+  const links={whatsapp:`https://wa.me/?text=${text}%20${url}`,facebook:`https://www.facebook.com/sharer/sharer.php?u=${url}`,twitter:`https://twitter.com/intent/tweet?text=${text}&url=${url}`,telegram:`https://t.me/share/url?url=${url}&text=${text}`,sms:`sms:?body=${text}%20${url}`,email:`mailto:?subject=Check this on Biz Radar&body=${text}%20${url}`};
+  if(platform==='native'&&navigator.share){navigator.share({title:_p.name,url:`https://bizradar.app/product?id=${_p.id}`});return;}
+  if(links[platform])window.open(links[platform],'_blank');
+}
+
+function copyLink(){
+  navigator.clipboard.writeText(g('psharelink').value).then(()=>{const b=document.querySelector('.cpbtn');b.textContent='✅ Copied!';b.style.background='#27ae60';setTimeout(()=>{b.textContent='📋 Copy';b.style.background='';},2000);});
+}
+
+g('shareModal').addEventListener('click',function(e){if(e.target===this)closeShare();});
+
+// ═══════════════════════════════════════════
+// ORDERS
+// ═══════════════════════════════════════════
+const OSTATUS={pending:{label:'⏳ Pending',cls:'bp',steps:[1,0,0,0]},confirmed:{label:'✅ Confirmed',cls:'bc',steps:[1,1,0,0]},on_the_way:{label:'🚚 On the Way',cls:'bo',steps:[1,1,1,0]},delivered:{label:'🎉 Delivered',cls:'bd',steps:[1,1,1,1]},cancelled:{label:'❌ Cancelled',cls:'bx',steps:[0,0,0,0]}};
+const OSTEPS=[{icon:'📝',label:'Placed'},{icon:'✅',label:'Confirmed'},{icon:'🚚',label:'On the Way'},{icon:'🎉',label:'Delivered'}];
+let allOrders=[],ocur='all';
+
+function loadOrders(){const sess=JSON.parse(sessionStorage.getItem('myOrders')||'[]');allOrders=[...sess,...SAMPLE_ORDERS];renderOrders();}
+
+function ofilter(status,tab){ocur=status;document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));tab.classList.add('on');renderOrders();}
+
+function renderOrders(){
+  const el=g('olist'),list=ocur==='all'?allOrders:allOrders.filter(o=>o.status===ocur);
+  if(!list.length){el.innerHTML=`<div class="empty" style="padding:60px 20px"><div class="eico">📦</div><h3>No orders here</h3><p style="margin-bottom:20px">${ocur==='all'?"You haven't placed any orders yet":`No ${ocur} orders`}</p><button class="shopbtn" onclick="go('home')">🛍️ Start Shopping</button></div>`;return;}
+  el.innerHTML=list.map((o,i)=>{
+    const s=OSTATUS[o.status]||OSTATUS.pending;
+    const tracker=OSTEPS.map((step,idx)=>{
+      const done=s.steps[idx]===1,active=!done&&idx>0&&s.steps[idx-1]===1,lineD=idx<OSTEPS.length-1&&s.steps[idx]&&s.steps[idx+1]?'done':'';
+      return`<div class="tstep"><div class="tdot ${done?'done':active?'active':''}">${done?'✓':step.icon}</div><div class="tlbl ${done?'done':active?'active':''}">${step.label}</div></div>${idx<OSTEPS.length-1?`<div class="tline ${lineD}"></div>`:''}`;
+    }).join('');
+    return`<div class="ocard" style="animation-delay:${i*.07}s"><div class="ohdr"><div><div class="oid">${o.id}</div><div class="odate">📅 ${o.date}</div></div><span class="badge ${s.cls}">${s.label}</span></div><div class="obody"><div class="oico">${o.emoji}</div><div class="oinf"><div class="oname">${o.productName}</div><div class="oseller">🏪 ${o.seller} · Qty: ${o.quantity}</div><div class="oprice">$${parseFloat(o.price).toFixed(2)}</div></div></div><div class="tracker"><div class="tsteps">${tracker}</div></div><div class="oacts">${o.status==='delivered'?`<button class="abtn abtnreorder" onclick="reorder('${o.id}')">🔄 Reorder</button>`:o.status==='pending'?`<button class="abtn abtncancel" onclick="ocancel('${o.id}')">❌ Cancel</button>`:''}<button class="abtn abtnwa" onclick="owa('${o.phone||''}','${o.productName}')">💬 WhatsApp</button></div></div>`;
+  }).join('');
+}
+
+function ocancel(id){if(!confirm('Cancel this order?'))return;allOrders=allOrders.map(o=>o.id===id?{...o,status:'cancelled'}:o);const sess=JSON.parse(sessionStorage.getItem('myOrders')||'[]').map(o=>o.id===id?{...o,status:'cancelled'}:o);sessionStorage.setItem('myOrders',JSON.stringify(sess));renderOrders();}
+function reorder(id){const o=allOrders.find(x=>x.id===id);if(o)alert(`Reordering ${o.productName}!\nConnecting you with ${o.seller}.`);}
+function owa(phone,name){if(!phone){alert('Seller contact not available.');return;}window.open(`https://wa.me/${phone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hi! Following up on my "${name}" order from Biz Radar.`)}`,'_blank');}
+
+// ═══════════════════════════════════════════
+// SELLERS OFFICE
+// ═══════════════════════════════════════════
+const EMOJIS={food:'🍎',fashion:'👗',electronics:'📱',furniture:'🪑',crafts:'🎨',agriculture:'🌾',beauty:'💄',other:'📦'};
+let products=[],imgs=[],editId=null;
+
+function loadSeller(){
+  const d=JSON.parse(sessionStorage.getItem('sellerData')||'null')||{storeName:"Mary's Fresh Farm",ceoName:"Mary Wanjiku",category:"Food & Groceries",country:"Kenya",county:"Nairobi",logistics:"Local Delivery",minPrice:1,maxPrice:50,url:"www.marysfarm.com",phone:"+254 712 345 678"};
+  g('osname').textContent=d.storeName;g('osceo').textContent='CEO: '+(d.ceoName||'-');g('oscat').textContent=d.category||'-';
+  g('odcountry').textContent=d.country||'-';g('odcounty').textContent=d.county||'-';g('odlog').textContent=d.logistics||'-';
+  g('odprice').textContent=d.minPrice?`$${d.minPrice} – $${d.maxPrice}`:'-';g('odurl').textContent=d.url||'-';g('odphone').textContent=d.phone||'-';
+  animCount('otviews',0,47,800);updateStats();
+}
+
+function animCount(id,from,to,dur){const el=g(id),t0=Date.now();const fn=()=>{const p=Math.min((Date.now()-t0)/dur,1);el.textContent=Math.round(from+(to-from)*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(fn);};requestAnimationFrame(fn);}
+function updateStats(){animCount('otprod',0,products.length,400);g('optrend').textContent=products.length>0?`+${products.length} listed`:'';}
+
+function prevImgs(e){Array.from(e.target.files).slice(0,5-imgs.length).forEach(f=>{if(f.size>5*1024*1024){toast('Image too large!');return;}const r=new FileReader();r.onload=ev=>{imgs.push(ev.target.result);renderImgs();};r.readAsDataURL(f);});}
+function renderImgs(){g('oipgrid').innerHTML=imgs.map((s,i)=>`<div class="ipi"><img src="${s}"><button class="rm" onclick="rmImg(${i})">×</button></div>`).join('');}
+function rmImg(i){imgs.splice(i,1);renderImgs();}
+
+function openProd(){g('prodModal').classList.add('open');}
+function closeProd(){
+  g('prodModal').classList.remove('open');g('omerr').style.display='none';imgs=[];renderImgs();editId=null;
+  ['opname','opmin','opmax','opsize','opcol','optex','opmat','opdesc','opstock'].forEach(id=>g(id).value='');
+  g('opcat').value='';g('omtitle').textContent='➕ Add New Product';
+}
+
+function saveProd(){
+  const name=g('opname').value.trim(),min=g('opmin').value,cat=g('opcat').value;
+  if(!name||!min||!cat){g('omerr').style.display='block';return;}
+  g('omerr').style.display='none';
+  const max=g('opmax').value||min;
+  const prod={id:editId||Date.now(),name,price:parseFloat(min),maxPrice:parseFloat(max),category:cat,emoji:EMOJIS[cat]||'📦',size:g('opsize').value.trim(),colour:g('opcol').value.trim(),texture:g('optex').value.trim(),material:g('opmat').value.trim(),desc:g('opdesc').value.trim(),stock:parseInt(g('opstock').value)||1,images:[...imgs],status:'active'};
+  if(editId){const i=products.findIndex(p=>p.id===editId);if(i!==-1)products[i]=prod;toast('✅ Product updated!');}
+  else{products.push(prod);toast(`✅ "${name}" added!`);}
+  updateStats();renderProducts();closeProd();
+}
+
+function renderProducts(){
+  g('opgrid').innerHTML=products.map((p,i)=>`<div class="pc" style="animation-delay:${i*.06}s"><div class="pcimg">${p.images&&p.images.length?`<img src="${p.images[0]}">`:`${p.emoji}`}</div><div class="pcnfo"><h4>${p.name}</h4><div class="pcpr">$${p.price.toFixed(2)}${p.maxPrice>p.price?'–$'+p.maxPrice.toFixed(2):''}</div><span class="pcst">● Active</span><div class="pcacts"><button class="pce" onclick="editProd(${p.id})">✏️ Edit</button><button class="pcd" onclick="delProd(${p.id})">🗑️</button></div></div></div>`).join('')+`<div class="addcard" onclick="openProd()"><div class="plus">+</div><p>Add Product</p></div>`;
+}
+
+function editProd(id){
+  const p=products.find(x=>x.id===id);if(!p)return;
+  editId=id;g('omtitle').textContent='✏️ Edit Product';
+  g('opname').value=p.name;g('opmin').value=p.price;g('opmax').value=p.maxPrice||'';g('opcat').value=p.category;
+  g('opsize').value=p.size||'';g('opcol').value=p.colour||'';g('optex').value=p.texture||'';g('opmat').value=p.material||'';g('opdesc').value=p.desc||'';g('opstock').value=p.stock||1;
+  imgs=p.images?[...p.images]:[];renderImgs();openProd();
+}
+
+function delProd(id){if(confirm('Delete this product?')){products=products.filter(p=>p.id!==id);updateStats();renderProducts();toast('🗑️ Deleted');}}
+function openNotif(){g('notifModal').classList.add('open');g('nbadge').style.display='none';}
+function closeNotif(){g('notifModal').classList.remove('open');}
+function toast(msg){const t=document.createElement('div');t.textContent=msg;Object.assign(t.style,{position:'fixed',bottom:'80px',left:'50%',transform:'translateX(-50%)',background:'var(--ca)',color:'var(--tx)',padding:'10px 20px',borderRadius:'20px',fontSize:'13px',zIndex:'9999',border:'1px solid var(--cb)',boxShadow:'0 4px 20px rgba(0,0,0,.4)',whiteSpace:'nowrap'});document.body.appendChild(t);setTimeout(()=>t.remove(),2500);}
+g('prodModal').addEventListener('click',function(e){if(e.target===this)closeProd();});
+g('notifModal').addEventListener('click',function(e){if(e.target===this)closeNotif();});
+
+// ═══════════════════════════════════════════
+// AI COWORKER
+// ═══════════════════════════════════════════
+const OPENAI_KEY='sk-svcacct-LmBNI6VagRZ67Jwg9LOqiZg33SqFRCiGOQsodmHSITsgHgLo1GxFl5FkxlcTLixJEcNfFNo3I2T3BlbkFJAB59weemAteAj6p_gBozWUZMOWF3x661AfjDp14v_uWYtpMdjm_qgYTOnL942tEXbLFcm95DITYA';
+
+const AI_CTX={
+  home:{label:'Search Assistant',greeting:"Hey! I'm Radar AI 👋 Describe what you need in plain words and I'll help you find it!",quick:['Help me search','Find a product for me','What can you do?'],sys:"You are Radar AI, a shopping assistant on Biz Radar - a global marketplace connecting buyers to local sellers worldwide. Help buyers find products by understanding their needs in plain language. Suggest search terms, categories, price ranges and filters. Keep replies short (2-3 sentences). Be warm and practical."},
+  results:{label:'Results Guide',greeting:"I can see you're browsing results! Need help comparing or refining?",quick:['Refine my search','Compare prices','Best product for me'],sys:"You are Radar AI helping a buyer review search results on Biz Radar. Help them refine searches, compare options, understand pricing and logistics. Be concise and actionable. 2-3 sentences max."},
+  product:{label:'Product Advisor',greeting:"Checking out this product? I can help you understand it or prepare questions for the seller.",quick:['Is this a good deal?','Questions for seller','Tell me about logistics'],sys:"You are Radar AI on a product page on Biz Radar. Help the buyer understand the product, think through if it meets their needs, understand logistics, and prepare questions for the seller. Be honest and helpful. Keep replies short."},
+  orders:{label:'Order Support',greeting:"I'm here to help with your orders! Got a question about a delivery or an issue?",quick:['Order is late','How to contact seller','Cancel an order'],sys:"You are Radar AI customer support for Biz Radar orders. Help users with order statuses, delays, contacting sellers, and resolving issues. Be calm, empathetic, and solution-focused. Keep replies concise."},
+  office:{label:'Business Coworker',greeting:"Hey boss! I'm your AI business coworker 💼 I can write product descriptions, suggest pricing, and give sales tips. What do you need?",quick:['Write a product description','Pricing advice','How to get more sales'],sys:"You are Radar AI, an AI business coworker for sellers on Biz Radar. Help sellers: write compelling product descriptions, suggest smart pricing, give actionable sales tips, improve listings. Be like a knowledgeable business partner. When writing descriptions, make them rich and appealing to buyers."}
+};
+
+let aiMsgs=[],aiTyping=false,aiStarted=false;
+
+function aiUpdateContext(view){
+  const ctx=AI_CTX[view]||AI_CTX.home;
+  const el=document.getElementById('ailabel');
+  if(el)el.textContent='● '+ctx.label;
+  // reset conversation on view change
+  aiMsgs=[];aiStarted=false;
+  const qbtns=g('aiqbtns');
+  if(qbtns){qbtns.style.display='flex';qbtns.innerHTML=ctx.quick.map(q=>`<button class="aiqbtn" onclick="aiQuick('${q}')">${q}</button>`).join('');}
+}
+
+function aiOpen(){
+  g('aipanel').classList.add('open');
+  if(!aiStarted){
+    const ctx=AI_CTX[curView]||AI_CTX.home;
+    setTimeout(()=>aiAddBot(ctx.greeting),200);
+    aiMsgs.push({role:'assistant',content:ctx.greeting});
+    aiStarted=true;
+  }
+  setTimeout(()=>g('aiin').focus(),400);
+}
+
+function aiClose(){g('aipanel').classList.remove('open');}
+function aiBackdrop(e){if(e.target.id==='aipanel')aiClose();}
+
+function aiAddBot(text){const el=document.createElement('div');el.className='aimsg bot';el.textContent=text;aiAppend(el);}
+function aiAddUser(text){const el=document.createElement('div');el.className='aimsg user';el.textContent=text;aiAppend(el);}
+function aiAppend(el){const c=g('aimsgs');c.appendChild(el);c.scrollTop=c.scrollHeight;}
+
+function aiShowTyping(){const el=document.createElement('div');el.className='aityping';el.id='aityping';el.innerHTML='<span></span><span></span><span></span>';aiAppend(el);}
+function aiHideTyping(){const el=document.getElementById('aityping');if(el)el.remove();}
+function aiHideQuick(){g('aiqbtns').style.display='none';}
+
+function aiQuick(text){aiHideQuick();aiSendMsg(text);}
+function aiSend(){const inp=g('aiin'),text=inp.value.trim();if(!text||aiTyping)return;inp.value='';aiHideQuick();aiSendMsg(text);}
+
+async function aiSendMsg(text){
+  if(aiTyping)return;
+  aiTyping=true;g('aisend').disabled=true;
+  aiAddUser(text);aiMsgs.push({role:'user',content:text});
+  aiShowTyping();
+  try{
+    const ctx=AI_CTX[curView]||AI_CTX.home;
+    const res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${OPENAI_KEY}`},body:JSON.stringify({model:'gpt-4o-mini',messages:[{role:'system',content:ctx.sys},...aiMsgs.slice(-10)],max_tokens:300,temperature:0.7})});
+    const data=await res.json();
+    aiHideTyping();
+    if(data.choices&&data.choices[0]){const reply=data.choices[0].message.content;aiMsgs.push({role:'assistant',content:reply});aiAddBot(reply);}
+    else aiAddBot("Hmm, couldn't get a response. Check your connection.");
+  }catch(e){aiHideTyping();aiAddBot("Sorry, something went wrong. Make sure you're connected.");console.error(e);}
+  aiTyping=false;g('aisend').disabled=false;g('aiin').focus();
+}
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+function g(id){return document.getElementById(id);}
+
+// Init
+aiUpdateContext('home');
+</script>
+const API='https://bweb-backend-production.up.railway.app',SB='https://qqnhqtnkkzxnzcclzzvt.supabase.co',K='sb_publishable_LmDKIprQByu0Obl7kG6R7Q_-ZsOrElK',F=async(t,e,o)=>await(await fetch(`${t}${e}`,o)).json(),R=async e=>F(SB,'/rest/v1/'+e,{headers:{'apikey':K,'Authorization':`Bearer ${K}`}}),X=async(t,e)=>F(API,t,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(e)});let u={};const G=()=>JSON.parse(localStorage.getItem('u')||'{}'),H=(e,t='buyer')=>(u={e,r:t,id:Math.random()},localStorage.setItem('u',JSON.stringify(u))),P=async()=>{let e=await R('products');document.querySelector('.rlist')?.replaceChildren(...e.map(e=>{let t=document.createElement('div');return t.className='pcard',t.innerHTML=`<div class="pthumb">${e.emoji||'📦'}</div><div class="pinfo"><h4>${e.name}</h4><div class="price">$${e.price}</div><button class="vbtn" onclick="V('${e.name}','${e.price}',${e.id})">View</button></div>`,t}))},V=(e,t,o)=>{u=G(),u.p={name:e,price:t,id:o},localStorage.setItem('u',JSON.stringify(u)),document.querySelector('.pname')&&(document.querySelector('.pname').textContent=e,document.querySelector('.pprice').textContent='$'+t)},A=()=>{let e=parseInt(document.querySelector('.qtyn')?.textContent||1),t=JSON.parse(localStorage.getItem('c')||'[]'),r=t.find(t=>t.id===u.p.id);r?r.q+=e:t.push({...u.p,q:e}),localStorage.setItem('c',JSON.stringify(t)),alert('Added!')},C=async()=>{u=G();let e=JSON.parse(localStorage.getItem('c')||'[]');if(!e.length)return alert('Empty');for(let t of e){let o=await X('/place-order',{buyer_name:document.querySelector('input[name="buyer_name"]')?.value,buyer_email:u.e,buyer_phone:document.querySelector('input[name="buyer_phone"]')?.value,product_id:t.id,product_name:t.name,quantity:t.q,unit_price:t.price,seller_id:1,seller_name:'BWEB',payment_method:'pesapal'});if(o.success){let r=await X('/pay/pesapal',{order_id:o.order_id});r.success&&(window.location.href=r.payment_url)}}},O=async()=>{u=G();let e=await X(`/orders/buyer?email=${u.e}`);document.querySelector('.olist')?.replaceChildren(...(e.orders||[]).map(e=>{let t=document.createElement('div');return t.className='ocard',t.innerHTML=`<div class="oid">#${e.id}</div><div class="oname">${e.product_name}</div><div class="badge">${e.payment_status}</div><div class="tracker"><div class="tstep"><div class="tdot ${e.payment_status==='paid'?'done':''}">✓</div></div><div class="tstep"><div class="tdot ${e.status==='shipped'?'done':''}">📦</div></div><div class="tstep"><div class="tdot ${e.delivery_confirmed?'done':''}">🏠</div></div></div><button onclick="confirmDel(${e.id},'${e.buyer_email}')">Confirm</button>`,t}))},W=async()=>{u=G();let e=await X(`/orders/seller?seller_id=${u.id}`);document.querySelector('.olist')?.replaceChildren(...(e.orders||[]).map(e=>{let t=document.createElement('div');return t.className='ocard',t.innerHTML=`<div>#${e.id} ${e.product_name} Buyer:${e.buyer_name}</div><div>Your: $${e.seller_amount} | Commission: $${e.commission}</div>`,t}))},confirmDel=async(e,t)=>{let o=await X('/confirm-delivery',{order_id:e,buyer_email:t});o.success?alert('✓ Confirmed!'):alert('Failed')},U=async()=>{u=G();let e={name:document.querySelector('input[placeholder="Product name"]')?.value,price:document.querySelector('input[placeholder="Price"]')?.value,emoji:document.querySelector('input[placeholder="Emoji"]')?.value||'📦',seller_id:u.id,seller_name:u.e,category:'General',country:'Kenya',county:'Nairobi'};await R('products',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(e)}),alert('Added!')},I=async e=>await X('/ai/assistant',{message:e,role:G().r||'user',location:'Kenya'}),N=async()=>{u=G();let e=await X(`/notifications?user_id=${u.id}`);e.notifications?.length&&(document.querySelector('.nbadge')&&(document.querySelector('.nbadge').textContent=e.notifications.length))};document.addEventListener('DOMContentLoaded',()=>{let e=G();e.e&&(document.querySelector('.rlist')&&P(),document.querySelector('.olist')&&(e.r==='seller'?W():O()),N(),setInterval(N,3e4)),document.querySelector('.sell-btn')?.addEventListener('click',()=>{let t=prompt('Email:'),o='yes'===prompt('Seller?'))?'seller':'buyer';H(t,o),location.reload()})});window.P=P,window.V=V,window.A=A,window.C=C,window.O=O,window.W=W,window.U=U,window.I=I,window.confirmDel=confirmDel;
+</body>
+</html>
