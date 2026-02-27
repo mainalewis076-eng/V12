@@ -2,10 +2,10 @@ const express = require('express');
 const path = require('path');
 const app = express();
 
-// Serve static files
-app.use(express.static(__dirname));
+// Serve static files from the current directory
+app.use(express.static(path.join(__dirname)));
 
-// SPA fallback
+// SPA fallback: serve index.html for all other routes
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
