@@ -1,1 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bi Tester</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #111;
+            color: #ccc;
+            font-family: monospace;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            gap: 10px;
+        }
+        .section-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .teaching-section {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .teaching-textarea {
+            flex: 1;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+        }
+        .teaching-textarea:focus { border-color: #ff00c3; }
+        .teaching-textarea::placeholder { color: #444; }
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            color: #fff;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .btn-teach { background: #ff00c3; }
+        .btn-teach:hover { background: #d400a0; }
+        .btn-upload { background: #2a2a2a; border: 1px solid #444; color: #ccc; }
+        .btn-upload:hover { background: #333; }
+        .btn-send { background: #0ff; color: #000; }
+        .btn-send:hover { background: #0dd; }
+        .btn-reset { background: #600; }
+        .btn-reset:hover { background: #800; }
+        hr { border: none; border-top: 1px solid #222; }
+        .chat-section {
+            flex: 3;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .chat-messages {
+            flex: 1;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 10px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+        .msg {
+            max-width: 80%;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            word-break: break-word;
+        }
+        .msg.user {
+            background: #2a2a3a;
+            margin-left: auto;
+            border: 1px solid #444;
+        }
+        .msg.bi {
+            background: #1a2a1a;
+            border: 1px solid #2a4a2a;
+            color: #8f8;
+        }
+        .msg-meta {
+            font-size: 10px;
+            color: #666;
+            margin-top: 3px;
+        }
+        .chat-input-row {
+            display: flex;
+            gap: 5px;
+        }
+        .chat-input {
+            flex: 1;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            outline: none;
+        }
+        .chat-input:focus { border-color: #0ff; }
+        .chat-input::placeholder { color: #444; }
+        .btn-sm { padding: 8px 12px; font-size: 12px; }
+        .row { display: flex; gap: 5px; align-items: center; }
+        .stats { font-size: 10px; color: #555; }
+    </style>
+</head>
+<body>
 
+    <!-- TEACHING SECTION -->
+    <div class="section-label">📤 TEACH — Paste text or upload files</div>
+    <div class="teaching-section">
+        <textarea class="teaching-textarea" id="teachingInput" placeholder="Paste anything...&#10;Format: word -> response&#10;Or: sky is blue&#10;Or: if hungry then eat&#10;Or full sentences..."></textarea>
+        <div class="row">
+            <button class="btn btn-upload" onclick="document.getElementById('fileInput').click()">📁 UPLOAD FILE</button>
+            <input type="file" id="fileInput" style="display:none" multiple onchange="uploadFile(this)">
+            <button class="btn btn-teach" onclick="teach()">LEARN</button>
+            <button class="btn btn-reset btn-sm" onclick="resetBrain()">RESET</button>
+            <span class="stats" id="stats">Pipes: 0</span>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- CHAT SECTION -->
+    <div class="section-label">💬 CHAT — Test what Bi learned</div>
+    <div class="chat-section">
+        <div class="chat-messages" id="chatMessages">
+            <div style="color:#444; text-align:center; padding:20px;">Bi is blank. Teach it above first.</div>
+        </div>
+        <div class="chat-input-row">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Ask Bi something..." onkeydown="if(event.key==='Enter') ask()">
+            <button class="btn btn-upload btn-sm" onclick="document.getElementById('chatFileInput').click()">📁</button>
+            <input type="file" id="chatFileInput" style="display:none" onchange="askWithFile(this)">
+            <button class="btn btn-send" onclick="ask()">SEND</button>
+        </div>
+    </div>
+
+    <script>
+        const API = '';
+
+        // ── TEACH ──
+        async function teach() {
+            const text = document.getElementById('teachingInput').value.trim();
+            if (!text) return;
+
+            const res = await fetch(`${API}/teach`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text })
+            });
+            const data = await res.json();
+            
+            document.getElementById('teachingInput').value = '';
+            updateStats();
+            alert(`Learned ${data.lessons} things. Total pipes: ${data.stats.totalPipes}`);
+        }
+
+        async function uploadFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const res = await fetch(`${API}/teach-file`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            input.value = '';
+            updateStats();
+            alert(`File processed. ${data.lessons || 0} lessons learned.`);
+        }
+
+        // ── ASK ──
+        async function ask() {
+            const input = document.getElementById('chatInput').value.trim();
+            if (!input) return;
+
+            const messages = document.getElementById('chatMessages');
+            if (messages.querySelector('div[style]')) messages.innerHTML = '';
+
+            // User message
+            const userMsg = document.createElement('div');
+            userMsg.className = 'msg user';
+            userMsg.textContent = input;
+            messages.appendChild(userMsg);
+
+            // Get Bi response
+            const res = await fetch(`${API}/ask`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: input })
+            });
+            const data = await res.json();
+
+            // Bi message
+            const biMsg = document.createElement('div');
+            biMsg.className = 'msg bi';
+            if (data.answer) {
+                biMsg.textContent = data.answer;
+                const meta = document.createElement('div');
+                meta.className = 'msg-meta';
+                meta.textContent = `${Math.round(data.confidence * 100)}% sure · ${data.source}`;
+                biMsg.appendChild(meta);
+
+                // Feedback buttons
+                const fb = document.createElement('div');
+                fb.style.marginTop = '5px';
+                fb.innerHTML = `
+                    <button onclick="feedback('${input.toLowerCase()}', 'up')" style="background:transparent;border:1px solid #2a4a2a;color:#8f8;cursor:pointer;padding:2px 8px;margin-right:5px;">👍</button>
+                    <button onclick="feedback('${input.toLowerCase()}', 'down')" style="background:transparent;border:1px solid #4a2a2a;color:#f88;cursor:pointer;padding:2px 8px;">👎</button>
+                `;
+                biMsg.appendChild(fb);
+            } else {
+                biMsg.textContent = data.message || "I don't know that yet.";
+            }
+            messages.appendChild(biMsg);
+            messages.scrollTop = messages.scrollHeight;
+
+            document.getElementById('chatInput').value = '';
+            updateStats();
+        }
+
+        async function askWithFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            document.getElementById('chatInput').value = `[File: ${file.name}]`;
+            input.value = '';
+        }
+
+        async function feedback(concept, vote) {
+            await fetch(`${API}/feedback`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ concept, vote })
+            });
+        }
+
+        async function resetBrain() {
+            if (confirm('Reset Bi? All knowledge will be lost.')) {
+                await fetch(`${API}/reset`, { method: 'POST' });
+                document.getElementById('chatMessages').innerHTML = '<div style="color:#444;text-align:center;padding:20px;">Bi is blank. Teach it above first.</div>';
+                updateStats();
+            }
+        }
+
+        async function updateStats() {
+            const res = await fetch(`${API}/stats`);
+            const data = await res.json();
+            document.getElementById('stats').textContent = `Pipes: ${data.totalPipes} | Fragments: ${data.totalFragments} | Patterns: ${data.totalPatterns} | Connections: ${data.totalConnections}`;
+        }
+
+        updateStats();
+    </script>
+</body>
+</html>
